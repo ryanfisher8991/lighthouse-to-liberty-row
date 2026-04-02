@@ -1,7 +1,7 @@
 // Supabase project credentials — fill in from:
 // Supabase Dashboard → Project Settings → API
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://ldvqxumswhvxzmbclboy.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkdnF4dW1zd2h2eHptYmNsYm95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwOTk2ODUsImV4cCI6MjA5MDY3NTY4NX0.KXEIatQQsuquC7vBbXOLFNRfWKVcMl516LotariXq4I';
 
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
