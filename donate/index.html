@@ -305,12 +305,31 @@
 
     <div class="stripe-notice">
       <span>⚡</span>
-      <span><strong>Stripe payments coming soon.</strong> Submitting now records your pledge — we'll follow up with a payment link once Stripe is live. You can also <a href="https://venmo.com" target="_blank" style="color:inherit;font-weight:600;">Venmo</a> us directly.</span>
+      <span><strong>Stripe payments coming soon.</strong> Submitting now records your pledge — we'll follow up with a payment link once Stripe is live.</span>
     </div>
 
     <button class="btn-donate-submit" id="submitBtn" onclick="submitDonation()">
       Donate Now
     </button>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-top:14px;">
+      <div style="flex:1;height:1px;background:#e2e8f0;"></div>
+      <span style="font-size:0.75rem;color:#9ca3af;letter-spacing:0.06em;text-transform:uppercase;">or donate via</span>
+      <div style="flex:1;height:1px;background:#e2e8f0;"></div>
+    </div>
+
+    <a href="https://venmo.com/kyle-rumaker" target="_blank" rel="noopener"
+       style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;padding:13px;
+              background:#008CFF;color:white;border-radius:4px;text-decoration:none;
+              font-size:0.85rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+              transition:background 0.2s,transform 0.15s;"
+       onmouseover="this.style.background='#0077DD';this.style.transform='translateY(-1px)'"
+       onmouseout="this.style.background='#008CFF';this.style.transform='translateY(0)'">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19.3 2C20.5 3.9 21 5.8 21 8.2c0 6.6-5.6 15.2-10.2 15.2C6.3 23.4 5.6 20 4 11.8L1 13.1 0 10.2C3.2 9 7.8 7.6 9.9 7.6c1.1 0 1.3 1.3 1 3.2.9-1.5 2.3-3.2 3.6-3.2.9 0 1.5.7 1.5 2.1 0 1-.2 2.2-.5 3.1C17.9 8.2 18.6 4.8 17.2 2H19.3z"/>
+      </svg>
+      Pay @kyle-rumaker on Venmo
+    </a>
   </div>
 
   <div class="section-divider">
