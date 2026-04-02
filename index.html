@@ -940,6 +940,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script>
 <script>
+try {
   // Nav scroll
   const nav = document.getElementById('mainNav');
   window.addEventListener('scroll', () => {
@@ -1008,6 +1009,7 @@
     el.style.transition = `opacity 0.55s ease ${i * 0.12}s, transform 0.55s ease ${i * 0.12}s`;
     causeObserver.observe(el);
   });
+} catch(e) { console.error('Page script error:', e); }
 </script>
 </body>
 </html>
