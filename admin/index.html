@@ -335,10 +335,54 @@
     <div class="panel" id="panel-sponsors">
       <div class="admin-header">
         <h1>Sponsors</h1>
-        <p>Review and approve sponsor applications.</p>
+        <p>Review applications or add a sponsor manually.</p>
       </div>
+
       <div class="card">
-        <div class="card-title">Sponsor Applications</div>
+        <div class="card-title">Add Sponsor Manually</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+          <div class="form-group">
+            <label class="form-label-sm">Business Name *</label>
+            <input type="text" id="sp-bizname" class="form-input-sm" placeholder="Acme Co.">
+          </div>
+          <div class="form-group">
+            <label class="form-label-sm">Website URL</label>
+            <input type="url" id="sp-url" class="form-input-sm" placeholder="https://example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label-sm">Contact Name *</label>
+            <input type="text" id="sp-contact" class="form-input-sm" placeholder="Jane Smith">
+          </div>
+          <div class="form-group">
+            <label class="form-label-sm">Contact Email *</label>
+            <input type="email" id="sp-email" class="form-input-sm" placeholder="jane@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label-sm">Tier *</label>
+            <select id="sp-tier" class="form-select-sm">
+              <option value="bronze">Bronze — $250</option>
+              <option value="silver">Silver — $500</option>
+              <option value="gold">Gold — $1,000</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label-sm">Payment Status</label>
+            <select id="sp-payment" class="form-select-sm">
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--navy);cursor:pointer;">
+            <input type="checkbox" id="sp-approved" checked style="accent-color:var(--gold);"> Auto-approve &amp; show on site
+          </label>
+          <button class="btn-save" onclick="adminAddSponsor()">Add Sponsor</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">All Sponsors</div>
         <div id="sponsors-table"><div class="empty-state">Loading…</div></div>
       </div>
     </div>
@@ -594,6 +638,32 @@
           `).join('')}
         </tbody>
       </table>`;
+  }
+
+  async function adminAddSponsor() {
+    const bizName = document.getElementById('sp-bizname').value.trim();
+    const contact = document.getElementById('sp-contact').value.trim();
+    const email   = document.getElementById('sp-email').value.trim();
+    if (!bizName) { alert('Please enter a business name.'); return; }
+    if (!contact) { alert('Please enter a contact name.'); return; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Please enter a valid email.'); return; }
+
+    const { error } = await db.from('sponsors').insert({
+      business_name:  bizName,
+      website_url:    document.getElementById('sp-url').value.trim() || null,
+      tier:           document.getElementById('sp-tier').value,
+      contact_name:   contact,
+      contact_email:  email,
+      payment_status: document.getElementById('sp-payment').value,
+      approved:       document.getElementById('sp-approved').checked
+    });
+    if (error) { console.error('adminAddSponsor:', error); alert('Failed to add sponsor.'); return; }
+
+    ['sp-bizname','sp-url','sp-contact','sp-email'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('sp-tier').value    = 'bronze';
+    document.getElementById('sp-payment').value = 'paid';
+    document.getElementById('sp-approved').checked = true;
+    loadSponsors();
   }
 
   async function approveSponsor(id) {
