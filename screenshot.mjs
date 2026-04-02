@@ -7,6 +7,7 @@ const puppeteer = require('C:/Users/ryanf/puppeteer-test/node_modules/puppeteer/
 
 const url = process.argv[2] || 'http://localhost:3000';
 const label = process.argv[3] || '';
+const width = parseInt(process.argv[4]) || 1280;
 
 const dir = './temporary screenshots';
 if (!existsSync(dir)) mkdirSync(dir);
@@ -25,7 +26,7 @@ const browser = await puppeteer.launch({
   args: ['--no-sandbox'],
 });
 const page = await browser.newPage();
-await page.setViewport({ width: 1280, height: 900 });
+await page.setViewport({ width, height: 900 });
 await page.goto(url, { waitUntil: 'networkidle2' });
 await page.screenshot({ path: outPath, fullPage: true });
 await browser.close();

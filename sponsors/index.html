@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sponsors — Lighthouse to Liberty Row</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #162447; --navy-dark: #0c1523; --gold: #c9942f;
+      --gold-light: #e4b84a; --sand: #faf8f2; --ocean: #1a6475;
+      --bronze: #a0522d; --silver: #6b7280; --gold-tier: #c9942f;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--sand); color: var(--navy); }
+
+    .nav {
+      background: var(--navy-dark); padding: 14px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    }
+    .nav img { height: 40px; }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links a {
+      font-size: 0.775rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: rgba(255,255,255,0.7);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--gold-light); }
+    .nav-links a.active { color: var(--gold-light); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: white; border-radius: 2px; }
+
+    .page-header { background: var(--navy); padding: 56px 48px 48px; text-align: center; }
+    .page-tag {
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--gold); display: block; margin-bottom: 12px;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.25rem); font-weight: 900; color: white;
+      line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 16px;
+    }
+    .page-sub { font-size: 1rem; color: rgba(255,255,255,0.5); max-width: 560px; margin: 0 auto; line-height: 1.65; }
+
+    .main { max-width: 1080px; margin: 0 auto; padding: 56px 24px; }
+
+    .thank-you {
+      background: white; border-radius: 6px; padding: 28px 32px;
+      border-left: 4px solid var(--gold);
+      box-shadow: 0 2px 16px rgba(22,36,71,0.07); margin-bottom: 52px;
+    }
+    .thank-you h2 { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    .thank-you p { font-size: 0.9375rem; color: #4a5568; line-height: 1.65; }
+
+    /* TIER CARDS */
+    .section-label {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--gold); display: block; margin-bottom: 20px;
+    }
+    .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 64px; }
+
+    .tier-card {
+      background: white; border-radius: 6px; overflow: hidden;
+      box-shadow: 0 4px 24px rgba(22,36,71,0.08), 0 1px 4px rgba(22,36,71,0.04);
+      border: 1px solid rgba(22,36,71,0.06);
+      display: flex; flex-direction: column;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .tier-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(22,36,71,0.13), 0 4px 12px rgba(22,36,71,0.07);
+    }
+    .tier-card.featured { border-color: var(--gold); border-width: 2px; }
+
+    .tier-header { padding: 28px 28px 20px; border-bottom: 1px solid #f1f5f9; }
+    .tier-badge {
+      display: inline-block; font-size: 0.6rem; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 2px; margin-bottom: 12px;
+    }
+    .tier-badge.bronze { background: rgba(160,82,45,0.1); color: var(--bronze); }
+    .tier-badge.silver { background: rgba(107,114,128,0.1); color: var(--silver); }
+    .tier-badge.gold   { background: rgba(201,148,47,0.12); color: var(--gold); }
+
+    .tier-price {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem; font-weight: 900; color: var(--navy); line-height: 1;
+    }
+    .tier-price span { font-size: 1.1rem; font-weight: 400; color: #9ca3af; }
+
+    .tier-body { padding: 24px 28px; flex: 1; }
+    .tier-perks { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .tier-perks li {
+      font-size: 0.9rem; color: #374151; display: flex; align-items: flex-start; gap: 10px; line-height: 1.45;
+    }
+    .tier-perks li::before {
+      content: '✓'; color: var(--gold); font-weight: 700; flex-shrink: 0; margin-top: 1px;
+    }
+
+    .tier-footer { padding: 20px 28px 28px; }
+    .btn-tier {
+      display: block; width: 100%; padding: 13px;
+      text-align: center; border-radius: 4px;
+      font-size: 0.82rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; cursor: pointer; border: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-tier:hover { transform: translateY(-1px); }
+    .btn-tier:active { transform: translateY(0); }
+    .btn-tier.bronze { background: rgba(160,82,45,0.1); color: var(--bronze); }
+    .btn-tier.bronze:hover { background: rgba(160,82,45,0.18); }
+    .btn-tier.silver { background: rgba(107,114,128,0.1); color: var(--silver); }
+    .btn-tier.silver:hover { background: rgba(107,114,128,0.18); }
+    .btn-tier.gold { background: var(--gold); color: var(--navy-dark); box-shadow: 0 4px 14px rgba(201,148,47,0.3); }
+    .btn-tier.gold:hover { background: var(--gold-light); }
+
+    /* SIGNUP FORM */
+    .form-panel {
+      display: none; background: white; border-radius: 6px; padding: 40px;
+      box-shadow: 0 4px 24px rgba(22,36,71,0.08); margin-bottom: 52px;
+      border-top: 3px solid var(--gold);
+    }
+    .form-panel.open { display: block; }
+
+    .form-panel-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;
+    }
+    .form-panel-title {
+      font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--navy);
+    }
+    .form-panel-close {
+      background: none; border: none; font-size: 1.25rem; color: #9ca3af;
+      cursor: pointer; padding: 4px 8px; border-radius: 3px; transition: color 0.2s;
+    }
+    .form-panel-close:hover { color: var(--navy); }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: span 2; }
+    .form-label { font-size: 0.8rem; font-weight: 600; color: var(--navy); }
+    .form-label .req { color: #ef4444; margin-left: 2px; }
+    .form-input, .form-select {
+      padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 4px;
+      font-size: 0.9375rem; color: var(--navy); font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s; background: white;
+    }
+    .form-input:focus, .form-select:focus { outline: none; border-color: var(--gold); }
+
+    .shirt-section { margin-top: 8px; }
+    .shirt-sizes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .shirt-size-btn {
+      padding: 7px 14px; border: 1.5px solid #e2e8f0; border-radius: 3px;
+      font-size: 0.8rem; font-weight: 600; color: var(--navy);
+      background: white; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    }
+    .shirt-size-btn:hover { border-color: var(--gold); }
+    .shirt-size-btn.selected { border-color: var(--gold); background: rgba(201,148,47,0.08); color: var(--gold); }
+    .shirt-size-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+    .shirt-count-note { font-size: 0.78rem; color: #6b7280; margin-top: 6px; }
+
+    .logo-upload-area {
+      border: 2px dashed #e2e8f0; border-radius: 4px; padding: 28px;
+      text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    }
+    .logo-upload-area:hover { border-color: var(--gold); background: rgba(201,148,47,0.03); }
+    .logo-upload-area p { font-size: 0.875rem; color: #6b7280; margin-top: 8px; }
+    .logo-preview { max-height: 80px; max-width: 200px; margin: 0 auto; display: none; }
+
+    .stripe-notice {
+      background: rgba(201,148,47,0.07); border: 1px solid rgba(201,148,47,0.25);
+      border-radius: 4px; padding: 14px 16px; margin: 24px 0;
+      font-size: 0.85rem; color: #92400e; display: flex; align-items: flex-start; gap: 10px;
+    }
+
+    .btn-submit {
+      padding: 15px 40px; background: var(--gold); color: var(--navy-dark);
+      font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(201,148,47,0.3);
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-submit:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .success-banner {
+      display: none; background: #f0fdf4; border: 1px solid #86efac;
+      border-radius: 4px; padding: 16px 20px; margin-bottom: 20px;
+      font-size: 0.9rem; color: #166534;
+    }
+    .success-banner.show { display: block; }
+
+    /* CURRENT SPONSORS */
+    .sponsors-section { margin-top: 16px; }
+    .sponsors-group { margin-bottom: 40px; }
+    .sponsors-group-label {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 16px; display: block;
+    }
+    .sponsors-logos {
+      display: flex; flex-wrap: wrap; gap: 16px; align-items: center;
+    }
+    .sponsor-logo-card {
+      background: white; border-radius: 4px; padding: 16px 24px;
+      border: 1px solid rgba(22,36,71,0.06);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 1px 4px rgba(22,36,71,0.05);
+      text-decoration: none; transition: box-shadow 0.2s, transform 0.2s;
+      min-width: 120px; min-height: 64px;
+    }
+    .sponsor-logo-card:hover { box-shadow: 0 4px 16px rgba(22,36,71,0.1); transform: translateY(-2px); }
+    .sponsor-logo-card img { max-height: 48px; max-width: 140px; object-fit: contain; }
+    .sponsor-logo-card span { font-size: 0.875rem; font-weight: 600; color: var(--navy); }
+    .sponsors-empty { font-size: 0.9rem; color: #9ca3af; font-style: italic; }
+
+    .footer-simple { background: var(--navy-dark); padding: 24px 48px; text-align: center; margin-top: 64px; }
+    .footer-simple a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.8rem; transition: color 0.2s; }
+    .footer-simple a:hover { color: var(--gold-light); }
+
+    @media (max-width: 768px) {
+      .nav { padding: 12px 20px; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .page-header { padding: 40px 20px 32px; }
+      .main { padding: 36px 16px; }
+      .tier-grid { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: span 1; }
+      .form-panel { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/"><img src="../brand_assets/Logo/L2L_LOGO.PNG" alt="Lighthouse to Liberty Row"></a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/donate">Donate</a>
+    <a href="/sponsors" class="active">Sponsors</a>
+    <a href="/join">Join Day 6</a>
+  </div>
+  <div class="hamburger" onclick="document.getElementById('mobileNav').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<div class="page-header">
+  <span class="page-tag">Partner With Us</span>
+  <h1 class="page-title">Become a Sponsor</h1>
+  <p class="page-sub">Your business helps fund beach safety programs across the New Jersey Shore — and gets recognized for it.</p>
+</div>
+
+<main class="main">
+
+  <div class="thank-you">
+    <h2>Thank you for considering a sponsorship.</h2>
+    <p>Every sponsor directly supports the American Shore &amp; Beach Preservation Association and the Upper Township Beach Patrol Fund. Your logo will be seen by everyone who follows Lighthouse to Liberty Row — on the website, on the T-shirts, and on the water.</p>
+  </div>
+
+  <!-- TIER CARDS -->
+  <span class="section-label">Sponsorship Tiers</span>
+  <div class="tier-grid">
+
+    <!-- BRONZE -->
+    <div class="tier-card">
+      <div class="tier-header">
+        <span class="tier-badge bronze">Bronze</span>
+        <div class="tier-price">$250 <span>one-time</span></div>
+      </div>
+      <div class="tier-body">
+        <ul class="tier-perks">
+          <li>Business name &amp; logo on the website</li>
+          <li>1 event T-shirt (size of your choice)</li>
+          <li>Thank you shoutout on Instagram</li>
+        </ul>
+      </div>
+      <div class="tier-footer">
+        <button class="btn-tier bronze" onclick="openForm('bronze')">Select Bronze</button>
+      </div>
+    </div>
+
+    <!-- SILVER -->
+    <div class="tier-card">
+      <div class="tier-header">
+        <span class="tier-badge silver">Silver</span>
+        <div class="tier-price">$500 <span>one-time</span></div>
+      </div>
+      <div class="tier-body">
+        <ul class="tier-perks">
+          <li>Business name &amp; logo on the website</li>
+          <li>Logo printed on the event T-shirt</li>
+          <li>2 event T-shirts (sizes of your choice)</li>
+          <li>Thank you shoutout on Instagram</li>
+        </ul>
+      </div>
+      <div class="tier-footer">
+        <button class="btn-tier silver" onclick="openForm('silver')">Select Silver</button>
+      </div>
+    </div>
+
+    <!-- GOLD -->
+    <div class="tier-card featured">
+      <div class="tier-header">
+        <span class="tier-badge gold">Gold</span>
+        <div class="tier-price">$1,000 <span>one-time</span></div>
+      </div>
+      <div class="tier-body">
+        <ul class="tier-perks">
+          <li>Business name &amp; logo on the website — featured placement</li>
+          <li>Logo on the event T-shirt — <strong>larger, top placement</strong></li>
+          <li>5 event T-shirts (sizes of your choice)</li>
+          <li>Sponsor sticker on the boat</li>
+          <li>Thank you shoutout on Instagram</li>
+        </ul>
+      </div>
+      <div class="tier-footer">
+        <button class="btn-tier gold" onclick="openForm('gold')">Select Gold</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIGNUP FORM -->
+  <div class="form-panel" id="sponsorForm">
+    <div class="success-banner" id="successBanner">
+      ✓ Application submitted! We'll review your information and reach out within 48 hours to confirm your sponsorship and arrange payment once Stripe is live.
+    </div>
+
+    <div class="form-panel-header">
+      <div class="form-panel-title" id="formTitle">Sponsor Application</div>
+      <button class="form-panel-close" onclick="closeForm()" aria-label="Close">✕</button>
+    </div>
+
+    <input type="hidden" id="selectedTier">
+
+    <div class="form-grid">
+      <!-- Business Info -->
+      <div class="form-group">
+        <label class="form-label" for="bizName">Business Name <span class="req">*</span></label>
+        <input type="text" id="bizName" class="form-input" placeholder="Acme Co." required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="bizUrl">Business Website</label>
+        <input type="url" id="bizUrl" class="form-input" placeholder="https://yoursite.com">
+      </div>
+
+      <!-- Contact Info -->
+      <div class="form-group">
+        <label class="form-label" for="contactName">Point of Contact — Name <span class="req">*</span></label>
+        <input type="text" id="contactName" class="form-input" placeholder="Jane Smith">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="contactTitle">Title (optional)</label>
+        <input type="text" id="contactTitle" class="form-input" placeholder="Owner, Marketing Director…">
+      </div>
+      <div class="form-group full">
+        <label class="form-label" for="contactEmail">Contact Email <span class="req">*</span></label>
+        <input type="email" id="contactEmail" class="form-input" placeholder="jane@yoursite.com">
+      </div>
+
+      <!-- Logo Upload -->
+      <div class="form-group full">
+        <label class="form-label">Business Logo <span class="req">*</span></label>
+        <div class="logo-upload-area" onclick="document.getElementById('logoFile').click()" id="uploadArea">
+          <img class="logo-preview" id="logoPreview" alt="Logo preview">
+          <div id="uploadPrompt">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" style="margin:0 auto">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p>Click to upload logo (PNG or SVG preferred)</p>
+          </div>
+        </div>
+        <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="previewLogo(this)">
+      </div>
+
+      <!-- Shirt Sizes -->
+      <div class="form-group full shirt-section" id="shirtSection">
+        <label class="form-label">T-Shirt Size(s) <span class="req">*</span></label>
+        <div id="shirtSizeNote" class="shirt-count-note"></div>
+        <div class="shirt-sizes" id="shirtSizes">
+          <button type="button" class="shirt-size-btn" data-size="XS" onclick="toggleSize(this)">XS</button>
+          <button type="button" class="shirt-size-btn" data-size="S"  onclick="toggleSize(this)">S</button>
+          <button type="button" class="shirt-size-btn" data-size="M"  onclick="toggleSize(this)">M</button>
+          <button type="button" class="shirt-size-btn" data-size="L"  onclick="toggleSize(this)">L</button>
+          <button type="button" class="shirt-size-btn" data-size="XL" onclick="toggleSize(this)">XL</button>
+          <button type="button" class="shirt-size-btn" data-size="XXL" onclick="toggleSize(this)">XXL</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stripe-notice">
+      <span>⚡</span>
+      <span><strong>Stripe payments coming soon.</strong> Submit your application now and we'll contact you to arrange payment within 48 hours.</span>
+    </div>
+
+    <button class="btn-submit" id="submitBtn" onclick="submitApplication()">Submit Application</button>
+  </div>
+
+  <!-- CURRENT SPONSORS -->
+  <div class="sponsors-section">
+    <span class="section-label">Our Sponsors</span>
+    <div id="sponsorDisplay">
+      <div class="sponsors-empty">Loading sponsors…</div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer-simple">
+  <a href="/">← Back to Lighthouse to Liberty Row</a>
+</footer>
+
+<script src="../js/supabase-config.js"></script>
+<script>
+  const SHIRT_COUNTS = { bronze: 1, silver: 2, gold: 5 };
+  const TIER_LABELS  = { bronze: 'Bronze — $250', silver: 'Silver — $500', gold: 'Gold — $1,000' };
+
+  function openForm(tier) {
+    document.getElementById('selectedTier').value = tier;
+    document.getElementById('formTitle').textContent = `Sponsor Application — ${TIER_LABELS[tier]}`;
+    document.getElementById('shirtSizeNote').textContent =
+      `Select ${SHIRT_COUNTS[tier]} shirt size${SHIRT_COUNTS[tier] > 1 ? 's' : ''}`;
+    document.getElementById('sponsorForm').classList.add('open');
+    document.getElementById('sponsorForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Reset size selections
+    document.querySelectorAll('.shirt-size-btn').forEach(b => b.classList.remove('selected'));
+  }
+
+  function closeForm() {
+    document.getElementById('sponsorForm').classList.remove('open');
+  }
+
+  function getSelectedSizes() {
+    return Array.from(document.querySelectorAll('.shirt-size-btn.selected')).map(b => b.dataset.size);
+  }
+
+  function toggleSize(btn) {
+    const tier = document.getElementById('selectedTier').value;
+    const max  = SHIRT_COUNTS[tier] || 1;
+    const selected = getSelectedSizes();
+    if (btn.classList.contains('selected')) {
+      btn.classList.remove('selected');
+    } else if (selected.length < max) {
+      btn.classList.add('selected');
+    }
+  }
+
+  function previewLogo(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('logoPreview');
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      document.getElementById('uploadPrompt').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function uploadLogo(file, sponsorId) {
+    const ext  = file.name.split('.').pop();
+    const path = `${sponsorId}.${ext}`;
+    const { error } = await db.storage.from('sponsor-logos').upload(path, file, { upsert: true });
+    if (error) { console.error('uploadLogo:', error); return null; }
+    const { data } = db.storage.from('sponsor-logos').getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  async function submitApplication() {
+    const tier         = document.getElementById('selectedTier').value;
+    const bizName      = document.getElementById('bizName').value.trim();
+    const bizUrl       = document.getElementById('bizUrl').value.trim();
+    const contactName  = document.getElementById('contactName').value.trim();
+    const contactTitle = document.getElementById('contactTitle').value.trim();
+    const contactEmail = document.getElementById('contactEmail').value.trim();
+    const logoFile     = document.getElementById('logoFile').files[0];
+    const sizes        = getSelectedSizes();
+
+    if (!bizName)      { alert('Please enter your business name.'); return; }
+    if (!contactName)  { alert('Please enter a point of contact name.'); return; }
+    if (!contactEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
+      alert('Please enter a valid contact email.'); return;
+    }
+    if (!logoFile)     { alert('Please upload your business logo.'); return; }
+    if (sizes.length < SHIRT_COUNTS[tier]) {
+      alert(`Please select ${SHIRT_COUNTS[tier]} shirt size${SHIRT_COUNTS[tier] > 1 ? 's' : ''}.`); return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+
+    // Insert sponsor row first to get the ID for logo path
+    const { data: sponsor, error: insertErr } = await db.from('sponsors').insert({
+      business_name:  bizName,
+      website_url:    bizUrl || null,
+      tier,
+      contact_name:   contactName,
+      contact_title:  contactTitle || null,
+      contact_email:  contactEmail,
+      payment_status: 'pending',
+      approved:       false
+    }).select('id').single();
+
+    if (insertErr) {
+      console.error('submitApplication:', insertErr);
+      alert('Something went wrong. Please try again.');
+      btn.disabled = false;
+      btn.textContent = 'Submit Application';
+      return;
+    }
+
+    // Upload logo and update row with URL
+    const logoUrl = await uploadLogo(logoFile, sponsor.id);
+    if (logoUrl) {
+      await db.from('sponsors').update({ logo_url: logoUrl }).eq('id', sponsor.id);
+    }
+
+    // Insert shirt orders
+    await db.from('sponsor_shirt_orders').insert(
+      sizes.map(size => ({ sponsor_id: sponsor.id, size }))
+    );
+
+    document.getElementById('successBanner').classList.add('show');
+    btn.textContent = 'Application Submitted ✓';
+    closeForm();
+  }
+
+  async function loadSponsors() {
+    const display = document.getElementById('sponsorDisplay');
+    const sponsors = await getApprovedSponsors();
+
+    if (!sponsors.length) {
+      display.innerHTML = '<p class="sponsors-empty">No sponsors yet — be the first!</p>';
+      return;
+    }
+
+    const byTier = { gold: [], silver: [], bronze: [] };
+    sponsors.forEach(s => { if (byTier[s.tier]) byTier[s.tier].push(s); });
+
+    display.innerHTML = ['gold', 'silver', 'bronze']
+      .filter(t => byTier[t].length)
+      .map(t => `
+        <div class="sponsors-group">
+          <span class="sponsors-group-label">${t.charAt(0).toUpperCase() + t.slice(1)} Sponsors</span>
+          <div class="sponsors-logos">
+            ${byTier[t].map(s => `
+              <a href="${s.website_url || '#'}" target="_blank" rel="noopener" class="sponsor-logo-card">
+                ${s.logo_url
+                  ? `<img src="${s.logo_url}" alt="${s.business_name}">`
+                  : `<span>${s.business_name}</span>`}
+              </a>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+  }
+
+  loadSponsors();
+</script>
+</body>
+</html>

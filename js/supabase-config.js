@@ -1,0 +1,58 @@
+// Supabase project credentials — fill in from:
+// Supabase Dashboard → Project Settings → API
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const DONATION_SOURCE = { STRIPE: 'stripe', VENMO: 'venmo', CASH: 'cash' };
+const USER_ROLE = { ADMIN: 'admin', MEMBER: 'member' };
+const DONOR_LIST_LIMIT = 50;
+const SPONSOR_LIST_LIMIT = 100;
+
+async function getSettings() {
+  const { data, error } = await db.from('settings').select('key, value');
+  if (error) { console.error('getSettings:', error); return {}; }
+  return Object.fromEntries(data.map(r => [r.key, r.value]));
+}
+
+async function getFundraiseSummary() {
+  const { data, error } = await db.from('fundraise_summary').select('*').single();
+  if (error) { console.error('getFundraiseSummary:', error); }
+  return data || { total_raised: 0, goal: 10000, donation_count: 0 };
+}
+
+async function getPublicDonations() {
+  const { data, error } = await db
+    .from('donations')
+    .select('id, amount, donor_name, is_anonymous, created_at')
+    .eq('is_public', true)
+    .order('created_at', { ascending: false })
+    .limit(DONOR_LIST_LIMIT);
+  if (error) { console.error('getPublicDonations:', error); return []; }
+  return data;
+}
+
+async function getApprovedSponsors() {
+  const { data, error } = await db
+    .from('sponsors')
+    .select('id, business_name, website_url, logo_url, tier')
+    .eq('approved', true)
+    .eq('payment_status', 'paid')
+    .order('tier', { ascending: false })
+    .limit(SPONSOR_LIST_LIMIT);
+  if (error) { console.error('getApprovedSponsors:', error); return []; }
+  return data;
+}
+
+function formatCurrency(amount) {
+  return '$' + Number(amount).toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function isAdmin(user) {
+  return user?.user_metadata?.role === USER_ROLE.ADMIN;
+}

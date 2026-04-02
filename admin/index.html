@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Lighthouse to Liberty Row</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #162447; --navy-dark: #0c1523; --navy-mid: #1e3564;
+      --gold: #c9942f; --gold-light: #e4b84a; --sand: #faf8f2;
+      --green: #16a34a; --red: #dc2626; --gray: #6b7280;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: var(--navy); min-height: 100vh; }
+
+    /* ===== LOGIN ===== */
+    .login-page {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: var(--navy-dark); padding: 24px;
+    }
+    .login-card {
+      background: white; border-radius: 8px; padding: 48px 40px;
+      width: 100%; max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .login-logo { height: 72px; display: block; margin: 0 auto 28px; }
+    .login-title {
+      font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700;
+      color: var(--navy); text-align: center; margin-bottom: 6px;
+    }
+    .login-sub { font-size: 0.85rem; color: var(--gray); text-align: center; margin-bottom: 28px; }
+    .login-group { margin-bottom: 16px; }
+    .login-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+    .login-input {
+      width: 100%; padding: 12px 14px; border: 1.5px solid #e2e8f0; border-radius: 4px;
+      font-size: 0.9375rem; font-family: 'Inter', sans-serif; color: var(--navy);
+      transition: border-color 0.2s;
+    }
+    .login-input:focus { outline: none; border-color: var(--gold); }
+    .login-btn {
+      width: 100%; padding: 14px; background: var(--gold); color: var(--navy-dark);
+      font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      border: none; border-radius: 4px; cursor: pointer; margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .login-btn:hover { background: var(--gold-light); }
+    .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .login-error {
+      display: none; background: #fef2f2; border: 1px solid #fca5a5;
+      border-radius: 4px; padding: 12px 14px; font-size: 0.85rem; color: var(--red);
+      margin-bottom: 16px;
+    }
+    .login-error.show { display: block; }
+
+    /* ===== ADMIN LAYOUT ===== */
+    .admin-page { display: none; min-height: 100vh; }
+    .admin-page.show { display: flex; }
+
+    .sidebar {
+      width: 240px; background: var(--navy-dark); flex-shrink: 0;
+      display: flex; flex-direction: column; padding: 24px 0;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    }
+    .sidebar-logo { height: 52px; display: block; margin: 0 auto 28px; }
+    .sidebar-label {
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(255,255,255,0.25); padding: 0 20px; margin-bottom: 8px; margin-top: 16px;
+    }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+      font-size: 0.875rem; font-weight: 500; color: rgba(255,255,255,0.65);
+      cursor: pointer; transition: background 0.15s, color 0.15s; border: none; background: none;
+      width: 100%; text-align: left;
+    }
+    .sidebar-item:hover { background: rgba(255,255,255,0.06); color: white; }
+    .sidebar-item.active { background: rgba(201,148,47,0.15); color: var(--gold-light); }
+    .sidebar-item .icon { width: 18px; text-align: center; flex-shrink: 0; }
+    .sidebar-bottom { margin-top: auto; padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.07); }
+    .sidebar-user { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-bottom: 10px; word-break: break-all; }
+    .logout-btn {
+      font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.4);
+      background: none; border: none; cursor: pointer; padding: 0; transition: color 0.2s;
+    }
+    .logout-btn:hover { color: white; }
+
+    .admin-main { flex: 1; padding: 32px; overflow-y: auto; }
+    .admin-header { margin-bottom: 28px; }
+    .admin-header h1 {
+      font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; color: var(--navy);
+    }
+    .admin-header p { font-size: 0.875rem; color: var(--gray); margin-top: 4px; }
+
+    /* ===== PANELS ===== */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .card {
+      background: white; border-radius: 6px; padding: 28px;
+      box-shadow: 0 1px 4px rgba(22,36,71,0.06), 0 4px 16px rgba(22,36,71,0.04);
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 16px;
+    }
+
+    /* SETTINGS */
+    .setting-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 0; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 12px;
+    }
+    .setting-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .setting-label { font-size: 0.9rem; font-weight: 600; color: var(--navy); }
+    .setting-sub { font-size: 0.8rem; color: var(--gray); margin-top: 2px; }
+
+    .toggle {
+      position: relative; width: 44px; height: 24px; flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0; background: #e2e8f0; border-radius: 12px;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; width: 18px; height: 18px;
+      background: white; border-radius: 50%; top: 3px; left: 3px;
+      transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle input:checked + .toggle-slider { background: var(--gold); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+    .goal-input-wrap { display: flex; align-items: center; gap: 10px; }
+    .goal-prefix { font-size: 1rem; color: var(--gray); }
+    .goal-input {
+      width: 120px; padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 4px;
+      font-size: 1rem; font-weight: 600; color: var(--navy); font-family: 'Inter', sans-serif;
+    }
+    .goal-input:focus { outline: none; border-color: var(--gold); }
+    .btn-save {
+      padding: 9px 18px; background: var(--gold); color: var(--navy-dark);
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      border: none; border-radius: 3px; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-save:hover { background: var(--gold-light); }
+
+    /* TABLES */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      text-align: left; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--gray); padding: 0 12px 12px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .data-table td {
+      padding: 12px 12px 12px 0; font-size: 0.875rem; color: var(--navy);
+      border-bottom: 1px solid #f8fafc; vertical-align: top;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #f8fafc; }
+
+    .badge {
+      display: inline-block; padding: 3px 8px; border-radius: 2px;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .badge.paid     { background: #dcfce7; color: var(--green); }
+    .badge.pending  { background: #fef9c3; color: #854d0e; }
+    .badge.approved { background: #dbeafe; color: #1d4ed8; }
+    .badge.bronze   { background: rgba(160,82,45,0.1); color: #92400e; }
+    .badge.silver   { background: rgba(107,114,128,0.1); color: var(--gray); }
+    .badge.gold     { background: rgba(201,148,47,0.12); color: var(--gold); }
+    .badge.anon     { background: #f1f5f9; color: var(--gray); }
+
+    .action-btn {
+      padding: 5px 10px; border-radius: 3px; font-size: 0.72rem; font-weight: 600;
+      cursor: pointer; border: none; transition: background 0.15s; margin-right: 4px;
+    }
+    .action-btn.approve { background: #dcfce7; color: var(--green); }
+    .action-btn.approve:hover { background: #bbf7d0; }
+    .action-btn.delete  { background: #fee2e2; color: var(--red); }
+    .action-btn.delete:hover  { background: #fecaca; }
+
+    .empty-state { text-align: center; padding: 32px; color: var(--gray); font-size: 0.875rem; font-style: italic; }
+
+    /* ADD DONATION FORM */
+    .add-donation-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-label-sm { font-size: 0.75rem; font-weight: 600; color: var(--navy); }
+    .form-input-sm {
+      padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 4px;
+      font-size: 0.875rem; color: var(--navy); font-family: 'Inter', sans-serif;
+    }
+    .form-input-sm:focus { outline: none; border-color: var(--gold); }
+    .form-select-sm {
+      padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 4px;
+      font-size: 0.875rem; color: var(--navy); background: white;
+    }
+    .form-select-sm:focus { outline: none; border-color: var(--gold); }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .admin-main { padding: 20px 16px; }
+      .add-donation-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-page" id="loginPage">
+  <div class="login-card">
+    <img src="../brand_assets/Logo/L2L_LOGO.PNG" alt="Lighthouse to Liberty Row" class="login-logo">
+    <h1 class="login-title">Admin Login</h1>
+    <p class="login-sub">Lighthouse to Liberty Row — Admin only</p>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-group">
+      <label class="login-label" for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" class="login-input" placeholder="you@email.com"
+        onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-group">
+      <label class="login-label" for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" class="login-input" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div class="admin-page" id="adminPage">
+  <nav class="sidebar">
+    <img src="../brand_assets/Logo/L2L_LOGO.PNG" alt="L2L" class="sidebar-logo">
+
+    <span class="sidebar-label">Overview</span>
+    <button class="sidebar-item active" onclick="showPanel('dashboard', this)">
+      <span class="icon">📊</span> Dashboard
+    </button>
+
+    <span class="sidebar-label">Manage</span>
+    <button class="sidebar-item" onclick="showPanel('donations', this)">
+      <span class="icon">💰</span> Donations
+    </button>
+    <button class="sidebar-item" onclick="showPanel('sponsors', this)">
+      <span class="icon">🏢</span> Sponsors
+    </button>
+    <button class="sidebar-item" onclick="showPanel('boats', this)">
+      <span class="icon">🚣</span> Boat Signups
+    </button>
+
+    <span class="sidebar-label">Config</span>
+    <button class="sidebar-item" onclick="showPanel('settings', this)">
+      <span class="icon">⚙️</span> Settings
+    </button>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-user" id="sidebarUser"></div>
+      <button class="logout-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+
+  <main class="admin-main">
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="admin-header">
+        <h1>Dashboard</h1>
+        <p>Welcome back. Here's where things stand.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;">
+        <div class="card" style="padding:20px 24px;">
+          <div class="card-title">Total Raised</div>
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--navy)" id="dash-raised">—</div>
+        </div>
+        <div class="card" style="padding:20px 24px;">
+          <div class="card-title">Goal</div>
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--navy)" id="dash-goal">—</div>
+        </div>
+        <div class="card" style="padding:20px 24px;">
+          <div class="card-title">Donors</div>
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--navy)" id="dash-donors">—</div>
+        </div>
+        <div class="card" style="padding:20px 24px;">
+          <div class="card-title">Boat Signups</div>
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--navy)" id="dash-boats">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DONATIONS -->
+    <div class="panel" id="panel-donations">
+      <div class="admin-header">
+        <h1>Donations</h1>
+        <p>Manage all donations and add manual entries from Venmo or cash.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Add Manual Donation (Venmo / Cash)</div>
+        <div class="add-donation-grid">
+          <div class="form-group">
+            <label class="form-label-sm">Donor Name</label>
+            <input type="text" id="md-name" class="form-input-sm" placeholder="Jane Smith (or blank for anon)">
+          </div>
+          <div class="form-group">
+            <label class="form-label-sm">Amount ($) *</label>
+            <input type="number" id="md-amount" class="form-input-sm" placeholder="50" min="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label-sm">Source *</label>
+            <select id="md-source" class="form-select-sm">
+              <option value="venmo">Venmo</option>
+              <option value="cash">Cash</option>
+            </select>
+          </div>
+          <button class="btn-save" onclick="addManualDonation()">Add</button>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--navy);cursor:pointer;">
+          <input type="checkbox" id="md-anon" style="accent-color:var(--gold);">
+          Post as Anonymous
+        </label>
+      </div>
+
+      <div class="card">
+        <div class="card-title">All Donations</div>
+        <div id="donations-table"><div class="empty-state">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- SPONSORS -->
+    <div class="panel" id="panel-sponsors">
+      <div class="admin-header">
+        <h1>Sponsors</h1>
+        <p>Review and approve sponsor applications.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Sponsor Applications</div>
+        <div id="sponsors-table"><div class="empty-state">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- BOATS -->
+    <div class="panel" id="panel-boats">
+      <div class="admin-header">
+        <h1>Boat Signups</h1>
+        <p>All registered boats for Day 6 — Sandy Hook to Liberty Island.</p>
+      </div>
+      <div class="card">
+        <div style="margin-bottom:16px;font-size:0.875rem;color:var(--gray)">
+          <span id="boat-count">—</span> of 10 boats registered
+        </div>
+        <div id="boats-table"><div class="empty-state">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="panel-settings">
+      <div class="admin-header">
+        <h1>Settings</h1>
+        <p>Control site-wide configuration.</p>
+      </div>
+      <div class="card">
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Fundraising Goal</div>
+            <div class="setting-sub">The target amount shown on the donation counter</div>
+          </div>
+          <div class="goal-input-wrap">
+            <span class="goal-prefix">$</span>
+            <input type="number" id="goalInput" class="goal-input" min="1">
+            <button class="btn-save" onclick="saveSetting('fundraise_goal', document.getElementById('goalInput').value)">Save</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Join Us Page — Visible</div>
+            <div class="setting-sub">When off, the Join Day 6 page shows a "not open yet" message</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="joinToggle" onchange="saveSetting('join_us_visible', this.checked ? 'true' : 'false')">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../js/supabase-config.js"></script>
+<script>
+  // ===== AUTH =====
+  async function doLogin() {
+    const email    = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const err      = document.getElementById('loginError');
+    const btn      = document.getElementById('loginBtn');
+
+    err.classList.remove('show');
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+
+    const { data, error } = await db.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      err.textContent = error.message;
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+      return;
+    }
+
+    const { data: profile } = await db.from('profiles').select('role').eq('id', data.user.id).single();
+    if (!profile || profile.role !== 'admin') {
+      await db.auth.signOut();
+      err.textContent = 'Access denied — admin accounts only.';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+      return;
+    }
+
+    showAdmin(data.user);
+  }
+
+  async function doLogout() {
+    await db.auth.signOut();
+    document.getElementById('adminPage').classList.remove('show');
+    document.getElementById('loginPage').style.display = 'flex';
+  }
+
+  function showAdmin(user) {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('adminPage').classList.add('show');
+    document.getElementById('sidebarUser').textContent = user.email;
+    loadDashboard();
+    loadSettings();
+  }
+
+  // Check if already logged in
+  db.auth.getSession().then(({ data: { session } }) => {
+    if (!session) return;
+    db.from('profiles').select('role').eq('id', session.user.id).single().then(({ data }) => {
+      if (data?.role === 'admin') showAdmin(session.user);
+    });
+  });
+
+  // ===== NAVIGATION =====
+  function showPanel(name, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    btn.classList.add('active');
+    const loaders = { donations: loadDonations, sponsors: loadSponsors, boats: loadBoats };
+    if (loaders[name]) loaders[name]();
+  }
+
+  // ===== DASHBOARD =====
+  async function loadDashboard() {
+    const [summary, boatData] = await Promise.all([
+      getFundraiseSummary(),
+      db.from('boat_signup_count').select('*').single()
+    ]);
+    document.getElementById('dash-raised').textContent  = formatCurrency(summary.total_raised);
+    document.getElementById('dash-goal').textContent    = formatCurrency(summary.goal);
+    document.getElementById('dash-donors').textContent  = summary.donation_count;
+    document.getElementById('dash-boats').textContent   = `${boatData.data?.signed_up || 0} / 10`;
+  }
+
+  // ===== SETTINGS =====
+  async function loadSettings() {
+    const settings = await getSettings();
+    document.getElementById('goalInput').value     = settings['fundraise_goal'] || 10000;
+    document.getElementById('joinToggle').checked  = settings['join_us_visible'] === 'true';
+  }
+
+  async function saveSetting(key, value) {
+    const { error } = await db.from('settings')
+      .update({ value, updated_at: new Date().toISOString() })
+      .eq('key', key);
+    if (error) { console.error('saveSetting:', error); alert('Failed to save.'); return; }
+    alert('Saved.');
+  }
+
+  // ===== DONATIONS =====
+  async function loadDonations() {
+    const el = document.getElementById('donations-table');
+    const { data, error } = await db.from('donations')
+      .select('*').order('created_at', { ascending: false }).limit(200);
+    if (error || !data?.length) { el.innerHTML = '<div class="empty-state">No donations yet.</div>'; return; }
+
+    el.innerHTML = `
+      <table class="data-table">
+        <thead><tr>
+          <th>Date</th><th>Donor</th><th>Amount</th><th>Source</th><th>Public</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+          ${data.map(d => `
+            <tr>
+              <td style="white-space:nowrap;color:var(--gray)">${formatDate(d.created_at)}</td>
+              <td>${d.is_anonymous ? '<span class="badge anon">Anonymous</span>' : (d.donor_name || '—')}</td>
+              <td><strong>${formatCurrency(d.amount)}</strong></td>
+              <td><span class="badge ${d.source}">${d.source}</span></td>
+              <td>${d.is_public ? '✓' : '—'}</td>
+              <td>
+                <button class="action-btn delete" onclick="deleteDonation('${d.id}')">Delete</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  async function addManualDonation() {
+    const amount = parseFloat(document.getElementById('md-amount').value);
+    if (!amount || amount <= 0) { alert('Enter a valid amount.'); return; }
+    const name   = document.getElementById('md-name').value.trim();
+    const source = document.getElementById('md-source').value;
+    const isAnon = document.getElementById('md-anon').checked;
+
+    const { error } = await db.from('donations').insert({
+      amount, source,
+      donor_name:    isAnon ? null : (name || null),
+      is_anonymous:  isAnon,
+      is_public:     true,
+      added_by_admin: true
+    });
+    if (error) { console.error('addManualDonation:', error); alert('Failed to add.'); return; }
+    document.getElementById('md-amount').value = '';
+    document.getElementById('md-name').value   = '';
+    document.getElementById('md-anon').checked = false;
+    loadDonations();
+    loadDashboard();
+  }
+
+  async function deleteDonation(id) {
+    if (!confirm('Delete this donation? This cannot be undone.')) return;
+    const { error } = await db.from('donations').delete().eq('id', id);
+    if (error) { console.error('deleteDonation:', error); alert('Failed to delete.'); return; }
+    loadDonations();
+    loadDashboard();
+  }
+
+  // ===== SPONSORS =====
+  async function loadSponsors() {
+    const el = document.getElementById('sponsors-table');
+    const { data, error } = await db.from('sponsors')
+      .select('*, sponsor_shirt_orders(size)').order('created_at', { ascending: false }).limit(100);
+    if (error || !data?.length) { el.innerHTML = '<div class="empty-state">No sponsor applications yet.</div>'; return; }
+
+    el.innerHTML = `
+      <table class="data-table">
+        <thead><tr>
+          <th>Business</th><th>Tier</th><th>Contact</th><th>Payment</th><th>Status</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+          ${data.map(s => `
+            <tr>
+              <td>
+                <strong>${s.business_name}</strong><br>
+                ${s.website_url ? `<a href="${s.website_url}" target="_blank" style="font-size:0.78rem;color:var(--gold)">${s.website_url}</a>` : ''}
+                ${s.logo_url ? `<br><a href="${s.logo_url}" target="_blank" style="font-size:0.78rem;color:var(--gray)">View logo</a>` : ''}
+              </td>
+              <td><span class="badge ${s.tier}">${s.tier}</span></td>
+              <td style="font-size:0.82rem">
+                ${s.contact_name}${s.contact_title ? `, ${s.contact_title}` : ''}<br>
+                <a href="mailto:${s.contact_email}" style="color:var(--gold)">${s.contact_email}</a>
+              </td>
+              <td><span class="badge ${s.payment_status}">${s.payment_status}</span></td>
+              <td>${s.approved ? '<span class="badge approved">Approved</span>' : '—'}</td>
+              <td>
+                ${!s.approved ? `<button class="action-btn approve" onclick="approveSponsor('${s.id}')">Approve</button>` : ''}
+                <button class="action-btn delete" onclick="deleteSponsor('${s.id}')">Delete</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  async function approveSponsor(id) {
+    const { error } = await db.from('sponsors').update({ approved: true, payment_status: 'paid' }).eq('id', id);
+    if (error) { console.error('approveSponsor:', error); alert('Failed.'); return; }
+    loadSponsors();
+  }
+
+  async function deleteSponsor(id) {
+    if (!confirm('Delete this sponsor application?')) return;
+    const { error } = await db.from('sponsors').delete().eq('id', id);
+    if (error) { console.error('deleteSponsor:', error); alert('Failed.'); return; }
+    loadSponsors();
+  }
+
+  // ===== BOATS =====
+  async function loadBoats() {
+    const el = document.getElementById('boats-table');
+    const { data, error } = await db.from('boats')
+      .select('*, rowers(full_name, phone, emergency_contact_name, emergency_contact_phone, medical_conditions, is_primary)')
+      .order('created_at', { ascending: false });
+    if (error || !data?.length) { el.innerHTML = '<div class="empty-state">No boat signups yet.</div>'; return; }
+
+    document.getElementById('boat-count').textContent = data.length;
+
+    el.innerHTML = `
+      <table class="data-table">
+        <thead><tr>
+          <th>Registered</th><th>Rowers</th><th>Boat</th><th>Qualifications</th><th>Waiver</th><th>Payment</th>
+        </tr></thead>
+        <tbody>
+          ${data.map(b => {
+            const r1 = b.rowers?.find(r => r.is_primary);
+            const r2 = b.rowers?.find(r => !r.is_primary);
+            return `
+              <tr>
+                <td style="color:var(--gray);white-space:nowrap">${formatDate(b.created_at)}</td>
+                <td style="font-size:0.82rem">
+                  <strong>${r1?.full_name || '—'}</strong> ${r1?.phone ? `· ${r1.phone}` : ''}<br>
+                  EC: ${r1?.emergency_contact_name || '—'} ${r1?.emergency_contact_phone ? `· ${r1.emergency_contact_phone}` : ''}<br>
+                  ${r1?.medical_conditions ? `<em style="color:var(--red)">Medical: ${r1.medical_conditions}</em><br>` : ''}
+                  <br>
+                  <strong>${r2?.full_name || '—'}</strong> ${r2?.phone ? `· ${r2.phone}` : ''}<br>
+                  EC: ${r2?.emergency_contact_name || '—'} ${r2?.emergency_contact_phone ? `· ${r2.emergency_contact_phone}` : ''}
+                  ${r2?.medical_conditions ? `<br><em style="color:var(--red)">Medical: ${r2.medical_conditions}</em>` : ''}
+                </td>
+                <td style="font-size:0.82rem">
+                  ${b.association}<br>${b.boat_type}
+                </td>
+                <td style="font-size:0.82rem">
+                  15mi: ${b.has_15_mile_experience ? '✓' : '✗'}<br>
+                  Trailer: ${b.has_trailer ? '✓' : '✗'}<br>
+                  Driver: ${b.has_trailer_driver ? '✓' : '✗'}
+                </td>
+                <td>${b.waiver_agreed ? '✓' : '—'}</td>
+                <td><span class="badge ${b.payment_status}">${b.payment_status}</span></td>
+              </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lighthouse to Liberty Row — New Jersey</title>
+  <meta name="description" content="Ryan Fisher and Kyle Rumaker row 147 miles from Cape May to Liberty Island to raise $10,000 for beach safety. August 31 – September 5, 2026.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:       #162447;
+      --navy-dark:  #0c1523;
+      --navy-mid:   #1e3564;
+      --gold:       #c9942f;
+      --gold-light: #e4b84a;
+      --sand:       #f5edd6;
+      --sand-light: #faf8f2;
+      --ocean:      #1a6475;
+      --ocean-light:#2a8fa5;
+      --white:      #ffffff;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--sand-light);
+      color: var(--navy);
+      overflow-x: hidden;
+    }
+
+    /* Grain overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 128px 128px;
+    }
+
+    /* ===== NAV ===== */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 16px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.4s ease, padding 0.3s ease, box-shadow 0.4s ease;
+    }
+    .nav.scrolled {
+      background: rgba(12, 21, 35, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 10px 48px;
+      box-shadow: 0 2px 32px rgba(0,0,0,0.35);
+    }
+    .nav-logo { height: 52px; width: auto; transition: height 0.3s ease; display: block; }
+    .nav.scrolled .nav-logo { height: 38px; }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a {
+      font-size: 0.775rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: rgba(255,255,255,0.8);
+      text-decoration: none; transition: color 0.2s ease;
+    }
+    .nav-links a:hover { color: var(--gold-light); }
+    .nav-actions { display: flex; align-items: center; gap: 12px; }
+    .btn-login {
+      font-size: 0.75rem; font-weight: 500; letter-spacing: 0.08em;
+      text-transform: uppercase; color: rgba(255,255,255,0.65);
+      text-decoration: none; padding: 8px 16px;
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 3px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-login:hover { color: white; border-color: rgba(255,255,255,0.5); }
+    .btn-donate-nav {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--navy-dark);
+      text-decoration: none; padding: 9px 22px;
+      background: var(--gold); border-radius: 3px;
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+    .btn-donate-nav:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .btn-donate-nav:active { transform: translateY(0); }
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      cursor: pointer; padding: 4px;
+    }
+    .hamburger span { display: block; width: 22px; height: 2px; background: white; border-radius: 2px; }
+
+    /* ===== MOBILE MENU ===== */
+    .mobile-menu {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(12,21,35,0.98);
+      flex-direction: column; align-items: center; justify-content: center; gap: 28px;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-close {
+      position: absolute; top: 20px; right: 24px;
+      background: none; border: none; color: rgba(255,255,255,0.6);
+      font-size: 1.5rem; cursor: pointer; padding: 8px;
+      transition: color 0.2s;
+    }
+    .mobile-close:hover { color: white; }
+    .mobile-menu a {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 700; color: white;
+      text-decoration: none; transition: color 0.2s;
+    }
+    .mobile-menu a:hover { color: var(--gold-light); }
+    .mobile-menu .mobile-sub {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem; font-weight: 500;
+      color: rgba(255,255,255,0.35); letter-spacing: 0.06em;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      position: relative; height: 100vh; min-height: 680px;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background-image: url('brand_assets/Photos/DSC_8499.JPG');
+      background-size: cover; background-position: center 35%;
+      animation: heroZoom 24s ease-in-out infinite alternate;
+    }
+    @keyframes heroZoom {
+      from { transform: scale(1.04); }
+      to   { transform: scale(1.12); }
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(to top, var(--navy-dark) 0%, rgba(12,21,35,0.75) 35%, rgba(12,21,35,0.3) 65%, rgba(12,21,35,0.55) 100%),
+        linear-gradient(135deg, rgba(26,100,117,0.25) 0%, transparent 60%);
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      padding: 0 24px; max-width: 860px;
+    }
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--gold-light);
+      margin-bottom: 20px;
+      opacity: 0; animation: fadeUp 0.8s ease 0.4s forwards;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 9vw, 6.5rem);
+      font-weight: 900; color: white;
+      line-height: 1.0; letter-spacing: -0.025em;
+      margin-bottom: 16px;
+      opacity: 0; animation: fadeUp 0.9s ease 0.6s forwards;
+    }
+    .hero-title em { font-style: italic; color: var(--gold-light); }
+    .hero-subtitle {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1rem, 2.2vw, 1.3rem);
+      font-style: italic; font-weight: 400;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 36px;
+      opacity: 0; animation: fadeUp 0.9s ease 0.8s forwards;
+    }
+    .hero-stats {
+      display: flex; justify-content: center; align-items: center;
+      gap: 0; margin-bottom: 40px;
+      opacity: 0; animation: fadeUp 0.9s ease 1.0s forwards;
+    }
+    .hero-stat {
+      padding: 0 28px; text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.15);
+    }
+    .hero-stat:last-child { border-right: none; }
+    .hero-stat-num {
+      display: block;
+      font-family: 'Playfair Display', serif;
+      font-size: 2.25rem; font-weight: 800;
+      color: var(--gold-light); line-height: 1;
+    }
+    .hero-stat-label {
+      display: block; margin-top: 5px;
+      font-size: 0.65rem; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+    }
+    .hero-ctas {
+      display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;
+      opacity: 0; animation: fadeUp 0.9s ease 1.2s forwards;
+    }
+    .btn-primary {
+      display: inline-block; padding: 15px 40px;
+      background: var(--gold); color: var(--navy-dark);
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; text-decoration: none; border-radius: 3px;
+      box-shadow: 0 4px 20px rgba(201,148,47,0.4), 0 2px 8px rgba(201,148,47,0.2);
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .btn-primary:hover {
+      background: var(--gold-light); transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(201,148,47,0.5), 0 4px 12px rgba(201,148,47,0.3);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary {
+      display: inline-block; padding: 14px 36px;
+      background: transparent; color: white;
+      font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; text-decoration: none; border-radius: 3px;
+      border: 1.5px solid rgba(255,255,255,0.35);
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    }
+    .btn-secondary:hover {
+      border-color: rgba(255,255,255,0.75);
+      background: rgba(255,255,255,0.07);
+      transform: translateY(-2px);
+    }
+    .btn-secondary:active { transform: translateY(0); }
+    .hero-scroll {
+      position: absolute; bottom: 28px; left: 50%;
+      transform: translateX(-50%); z-index: 2;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      opacity: 0; animation: fadeIn 1s ease 1.8s forwards;
+    }
+    .hero-scroll-label {
+      font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+    .hero-scroll-line {
+      width: 1px; height: 36px;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+      animation: scrollBounce 2.2s ease-in-out infinite;
+    }
+    @keyframes scrollBounce {
+      0%, 100% { transform: scaleY(1); opacity: 0.4; }
+      50%       { transform: scaleY(1.4); opacity: 0.8; }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+
+    /* ===== WAVE DIVIDERS ===== */
+    .wave { display: block; width: 100%; overflow: hidden; line-height: 0; }
+    .wave svg { display: block; width: 100%; }
+
+    /* ===== COUNTER ===== */
+    .counter-section {
+      background: var(--navy);
+      padding: 72px 40px;
+      position: relative; overflow: hidden;
+    }
+    .counter-section::before {
+      content: '';
+      position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 350px;
+      background: radial-gradient(ellipse, rgba(201,148,47,0.14) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .counter-inner { max-width: 800px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
+    .counter-label {
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 12px;
+    }
+    .counter-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3.5rem, 9vw, 6rem);
+      font-weight: 900; color: white; line-height: 1; margin-bottom: 6px;
+    }
+    .counter-goal {
+      font-size: 0.875rem; color: rgba(255,255,255,0.4);
+      margin-bottom: 28px; letter-spacing: 0.04em;
+    }
+    .progress-wrap {
+      height: 5px; background: rgba(255,255,255,0.08);
+      border-radius: 3px; overflow: hidden; margin-bottom: 10px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--gold), var(--gold-light));
+      border-radius: 3px; width: 0%;
+      transition: width 2.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px rgba(228,184,74,0.6);
+    }
+    .progress-meta {
+      display: flex; justify-content: space-between;
+      font-size: 0.7rem; color: rgba(255,255,255,0.35); letter-spacing: 0.04em;
+      margin-bottom: 28px;
+    }
+    .counter-cta { margin-top: 4px; }
+    .counter-sub {
+      font-size: 0.875rem; color: rgba(255,255,255,0.4);
+      margin-bottom: 20px; line-height: 1.6;
+    }
+    .counter-sub strong { color: rgba(255,255,255,0.75); font-weight: 600; }
+
+    /* ===== MISSION ===== */
+    .mission-section { background: var(--sand-light); padding: 100px 48px; }
+    .section-inner { max-width: 1160px; margin: 0 auto; }
+    .section-tag {
+      display: block; font-size: 0.68rem; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 14px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3.25rem);
+      font-weight: 800; color: var(--navy);
+      line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 24px;
+    }
+    .section-title em { font-style: italic; color: var(--ocean); }
+    .body-text { font-size: 1.05rem; line-height: 1.78; color: #3d4a5c; }
+    .mission-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center;
+    }
+    .mission-copy { display: flex; flex-direction: column; gap: 20px; }
+    .mission-photo { position: relative; border-radius: 4px; overflow: hidden; }
+    .mission-photo img { width: 100%; height: 460px; object-fit: cover; display: block; }
+    .mission-photo::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(12,21,35,0.45) 0%, transparent 55%);
+    }
+    .photo-cap {
+      position: absolute; bottom: 18px; left: 18px; right: 18px; z-index: 1;
+      font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+    }
+    .arrow-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--gold);
+      text-decoration: none;
+      transition: gap 0.2s ease;
+    }
+    .arrow-link:hover { gap: 14px; }
+
+    /* ===== ROUTE ===== */
+    .route-section {
+      background: var(--navy-dark);
+      padding: 100px 48px;
+      position: relative; overflow: hidden;
+    }
+    .route-section::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: url('brand_assets/Photos/IMG_7340.JPG');
+      background-size: cover; background-position: center;
+      opacity: 0.06;
+    }
+    .route-section::after {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at 15% 50%, rgba(26,100,117,0.2) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 50%, rgba(201,148,47,0.08) 0%, transparent 55%);
+    }
+    .route-inner { position: relative; z-index: 1; max-width: 1160px; margin: 0 auto; }
+    .route-header { text-align: center; margin-bottom: 60px; }
+    .route-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    .route-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 5px; padding: 28px;
+      position: relative; overflow: hidden;
+      transition: background 0.3s ease, border-color 0.3s ease, transform 0.5s ease, opacity 0.5s ease;
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .route-card.visible:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(201,148,47,0.25);
+      transform: translateY(-4px);
+    }
+    .route-card.day-6 {
+      background: rgba(201,148,47,0.07);
+      border-color: rgba(201,148,47,0.2);
+    }
+    .route-card.day-6:hover {
+      background: rgba(201,148,47,0.11);
+      border-color: rgba(201,148,47,0.45);
+    }
+    .day-badge { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .day-num {
+      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--gold);
+      background: rgba(201,148,47,0.13); padding: 4px 10px; border-radius: 2px;
+    }
+    .day-date { font-size: 0.68rem; color: rgba(255,255,255,0.3); }
+    .route-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem; font-weight: 700; color: white;
+      margin-bottom: 8px; line-height: 1.3;
+    }
+    .route-miles { font-size: 0.775rem; color: rgba(255,255,255,0.38); }
+    .route-miles strong { color: var(--gold-light); font-weight: 600; }
+    .route-note { margin-top: 12px; font-size: 0.72rem; color: rgba(255,255,255,0.3); font-style: italic; }
+    .route-note.gold { color: rgba(228,184,74,0.65); }
+    .join-badge {
+      position: absolute; top: 14px; right: 14px;
+      background: var(--gold); color: var(--navy-dark);
+      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; padding: 4px 8px; border-radius: 2px;
+    }
+    .route-total {
+      text-align: center; margin-top: 40px; padding-top: 32px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .route-total-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.75rem; font-weight: 900; color: var(--gold-light);
+    }
+    .route-total-label {
+      font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
+      color: rgba(255,255,255,0.3); margin-top: 6px;
+    }
+
+    /* ===== CAUSES ===== */
+    .causes-section { background: var(--sand-light); padding: 100px 48px; }
+    .causes-header { text-align: center; margin-bottom: 52px; }
+    .causes-sub {
+      font-size: 1rem; line-height: 1.7; color: #5a6a7e;
+      max-width: 500px; margin: 0 auto;
+    }
+    .causes-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 28px; max-width: 880px; margin: 0 auto;
+    }
+    .cause-card {
+      background: white; border-radius: 5px; padding: 40px;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(22,36,71,0.07), 0 1px 4px rgba(22,36,71,0.04);
+      border: 1px solid rgba(22,36,71,0.05);
+      text-decoration: none; color: inherit; display: block;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .cause-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 16px 48px rgba(22,36,71,0.12), 0 4px 16px rgba(22,36,71,0.07);
+    }
+    .cause-icon {
+      width: 60px; height: 60px; margin: 0 auto 18px;
+      border-radius: 50%; background: rgba(22,36,71,0.05);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+    }
+    .cause-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem; font-weight: 700;
+      color: var(--navy); margin-bottom: 12px; line-height: 1.3;
+    }
+    .cause-card p { font-size: 0.9rem; line-height: 1.65; color: #5a6a7e; margin-bottom: 18px; }
+    .cause-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--gold);
+      transition: gap 0.2s ease;
+    }
+    .cause-link:hover { gap: 10px; }
+
+    /* ===== PHOTO STRIP ===== */
+    .photo-strip { display: flex; height: 260px; overflow: hidden; }
+    .strip-item { flex: 1; overflow: hidden; position: relative; }
+    .strip-item img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.55s ease;
+    }
+    .strip-item:hover img { transform: scale(1.07); }
+    .strip-item::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(12,21,35,0.45) 0%, transparent 60%);
+    }
+
+    /* ===== CTA SECTION ===== */
+    .cta-section {
+      background: var(--navy); padding: 100px 48px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+      content: ''; position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 900px; height: 450px;
+      background: radial-gradient(ellipse, rgba(26,100,117,0.25) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .cta-inner { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
+    .cta-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800; color: white;
+      line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 16px;
+    }
+    .cta-sub { font-size: 1rem; color: rgba(255,255,255,0.45); line-height: 1.68; margin-bottom: 36px; }
+    .cta-buttons { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; }
+    .btn-outline-gold {
+      display: inline-block; padding: 14px 30px;
+      border: 1.5px solid rgba(201,148,47,0.45); color: var(--gold-light);
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; text-decoration: none; border-radius: 3px;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    }
+    .btn-outline-gold:hover {
+      border-color: var(--gold); background: rgba(201,148,47,0.09);
+      transform: translateY(-2px);
+    }
+    .btn-outline-gold:active { transform: translateY(0); }
+
+    /* ===== FOOTER ===== */
+    .footer { background: var(--navy-dark); padding: 60px 48px 32px; }
+    .footer-inner { max-width: 1160px; margin: 0 auto; }
+    .footer-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.07);
+      gap: 48px; flex-wrap: wrap;
+    }
+    .footer-brand img { height: 62px; width: auto; }
+    .footer-tagline {
+      font-family: 'Playfair Display', serif; font-style: italic;
+      font-size: 0.875rem; color: rgba(255,255,255,0.3); margin-top: 12px;
+    }
+    .footer-cols { display: flex; gap: 60px; flex-wrap: wrap; }
+    .footer-col h4 {
+      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 16px;
+    }
+    .footer-col a {
+      display: block; font-size: 0.875rem;
+      color: rgba(255,255,255,0.45); text-decoration: none;
+      margin-bottom: 10px; transition: color 0.2s;
+    }
+    .footer-col a:hover { color: rgba(255,255,255,0.9); }
+    .footer-social { display: flex; gap: 10px; margin-top: 4px; }
+    .social-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.5); text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .social-btn:hover { background: rgba(201,148,47,0.18); color: var(--gold-light); }
+    .footer-bottom {
+      padding-top: 24px; display: flex;
+      justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 10px;
+    }
+    .footer-copy { font-size: 0.72rem; color: rgba(255,255,255,0.2); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 900px) {
+      .nav { padding: 14px 24px; }
+      .nav.scrolled { padding: 10px 24px; }
+      .nav-links { display: none; }
+      .btn-login { display: none; }
+      .hamburger { display: flex; }
+
+      .hero-stats { gap: 0; }
+      .hero-stat { padding: 0 16px; }
+      .hero-stat-num { font-size: 1.75rem; }
+
+      .mission-section, .causes-section, .cta-section { padding: 64px 24px; }
+      .route-section { padding: 64px 24px; }
+      .mission-grid { grid-template-columns: 1fr; gap: 36px; }
+      .mission-photo img { height: 280px; }
+      .route-grid { grid-template-columns: 1fr 1fr; }
+      .causes-grid { grid-template-columns: 1fr; }
+      .photo-strip { height: 180px; }
+      .strip-item:nth-child(3), .strip-item:nth-child(4) { display: none; }
+      .footer { padding: 48px 24px 28px; }
+      .footer-top { flex-direction: column; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+
+    @media (max-width: 600px) {
+      .hero-stat { padding: 0 10px; }
+      .hero-stat-num { font-size: 1.4rem; }
+      .hero-stat-label { font-size: 0.55rem; }
+      .route-grid { grid-template-columns: 1fr; }
+      .footer-cols { gap: 32px; }
+      .cta-section { padding: 64px 20px; }
+      .counter-section { padding: 56px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" onclick="closeMobileMenu()" aria-label="Close">✕</button>
+  <a href="#about" onclick="closeMobileMenu()">About</a>
+  <a href="#route" onclick="closeMobileMenu()">The Route</a>
+  <a href="#donate" onclick="closeMobileMenu()">Donate</a>
+  <a href="#causes" onclick="closeMobileMenu()">Our Cause</a>
+  <a href="/sponsors" onclick="closeMobileMenu()">Sponsors</a>
+  <a href="/join" onclick="closeMobileMenu()">Join Day 6</a>
+  <a href="/admin" onclick="closeMobileMenu()" class="mobile-sub">Login</a>
+</div>
+
+<!-- NAV -->
+<nav class="nav" id="mainNav">
+  <a href="/"><img src="brand_assets/Logo/L2L_LOGO.PNG" alt="Lighthouse to Liberty Row" class="nav-logo"></a>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#route">The Route</a>
+    <a href="#causes">Our Cause</a>
+    <a href="/sponsors">Sponsors</a>
+    <a href="/join">Join Day 6</a>
+  </div>
+  <div class="nav-actions">
+    <a href="/admin" class="btn-login">Login</a>
+    <a href="#donate" class="btn-donate-nav">Donate</a>
+    <div class="hamburger" onclick="openMobileMenu()" role="button" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <span class="hero-eyebrow">New Jersey &nbsp;·&nbsp; Aug 31 – Sep 5, 2026</span>
+    <h1 class="hero-title">Lighthouse<br>to <em>Liberty</em> Row</h1>
+    <p class="hero-subtitle">Cape May to Liberty Island &mdash; 147 miles by sea</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-num">147</span>
+        <span class="hero-stat-label">Miles</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">6</span>
+        <span class="hero-stat-label">Days</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">2</span>
+        <span class="hero-stat-label">Rowers</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">$10K</span>
+        <span class="hero-stat-label">Goal</span>
+      </div>
+    </div>
+    <div class="hero-ctas">
+      <a href="#donate" class="btn-primary">Donate Now</a>
+      <a href="#route" class="btn-secondary">See the Route</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span class="hero-scroll-label">Scroll</span>
+    <div class="hero-scroll-line"></div>
+  </div>
+</section>
+
+<!-- WAVE navy → sand -->
+<div class="wave" style="background:var(--navy-dark)">
+  <svg viewBox="0 0 1440 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,28 C360,56 720,0 1080,32 C1260,48 1380,12 1440,28 L1440,56 L0,56 Z" fill="#faf8f2"/>
+  </svg>
+</div>
+
+<!-- FUNDRAISE COUNTER -->
+<section class="counter-section" id="donate">
+  <div class="counter-inner">
+    <p class="counter-label">Fundraising Progress</p>
+    <div class="counter-amount" id="counterDisplay">$0</div>
+    <p class="counter-goal">of $10,000 goal</p>
+    <div class="progress-wrap">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-meta">
+      <span id="pctLabel">0% funded</span>
+      <span id="remLabel">$10,000 remaining</span>
+    </div>
+    <p class="counter-sub">Every dollar rows us closer to Liberty Island.<br><strong>Help us protect the Jersey Shore.</strong></p>
+    <div class="counter-cta">
+      <a href="/donate" class="btn-primary">Make a Donation</a>
+    </div>
+  </div>
+</section>
+
+<!-- WAVE navy → sand -->
+<div class="wave" style="background:var(--navy)">
+  <svg viewBox="0 0 1440 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,18 C480,56 960,0 1440,36 L1440,56 L0,56 Z" fill="#faf8f2"/>
+  </svg>
+</div>
+
+<!-- MISSION -->
+<section class="mission-section" id="about">
+  <div class="section-inner">
+    <div class="mission-grid">
+      <div class="mission-copy">
+        <div>
+          <span class="section-tag">The Mission</span>
+          <h2 class="section-title">Rowing the<br><em>Jersey Shore</em><br>for a cause</h2>
+        </div>
+        <p class="body-text">
+          In August 2026, Ryan Fisher and Kyle Rumaker will row a lifeguard dory from Cape May Lighthouse to Liberty Island — 147 miles along the New Jersey coastline over six consecutive days, launching before sunrise each morning.
+        </p>
+        <p class="body-text">
+          This isn't a race. It's a tribute to the lifeguards who protect our shores, and a fundraiser for the organizations that support them. Every stroke powers beach safety programs that protect millions of swimmers along the Jersey Shore each summer.
+        </p>
+        <a href="#causes" class="arrow-link">
+          Who we're rowing for
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+      <div class="mission-photo">
+        <img src="brand_assets/Photos/DSC_8269.JPG" alt="Ryan and Kyle rowing">
+        <div class="photo-cap">Upper Township Beach Patrol · Van Dyne Dory</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WAVE sand → navy-dark -->
+<div class="wave" style="background:var(--sand-light)">
+  <svg viewBox="0 0 1440 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,32 C240,56 600,0 960,40 C1200,64 1380,8 1440,24 L1440,56 L0,56 Z" fill="#0c1523"/>
+  </svg>
+</div>
+
+<!-- ROUTE -->
+<section class="route-section" id="route">
+  <div class="route-inner">
+    <div class="route-header">
+      <span class="section-tag">The Journey</span>
+      <h2 class="section-title" style="color:white;">Six Days.<br><em style="color:var(--gold-light)">One Coastline.</em></h2>
+    </div>
+    <div class="route-grid">
+
+      <div class="route-card" style="animation: cardIn 0.55s ease 0.05s both;">
+        <div class="day-badge">
+          <span class="day-num">Day 1</span>
+          <span class="day-date">Aug 31</span>
+        </div>
+        <h3>Cape May &rarr; Strathmere</h3>
+        <p class="route-miles"><strong>24&ndash;25 miles</strong></p>
+        <p class="route-note">Launching from Cape May Lighthouse at dawn</p>
+      </div>
+
+      <div class="route-card" style="animation: cardIn 0.55s ease 0.14s both;">
+        <div class="day-badge">
+          <span class="day-num">Day 2</span>
+          <span class="day-date">Sep 1</span>
+        </div>
+        <h3>Strathmere &rarr; Brigantine</h3>
+        <p class="route-miles"><strong>22 miles</strong></p>
+        <p class="route-note">Launching before sunrise</p>
+      </div>
+
+      <div class="route-card" style="animation: cardIn 0.55s ease 0.23s both;">
+        <div class="day-badge">
+          <span class="day-num">Day 3</span>
+          <span class="day-date">Sep 2</span>
+        </div>
+        <h3>Brigantine &rarr; Harvey Cedars</h3>
+        <p class="route-miles"><strong>25 miles</strong></p>
+        <p class="route-note">Launching before sunrise</p>
+      </div>
+
+      <div class="route-card" style="animation: cardIn 0.55s ease 0.32s both;">
+        <div class="day-badge">
+          <span class="day-num">Day 4</span>
+          <span class="day-date">Sep 3</span>
+        </div>
+        <h3>Harvey Cedars &rarr; Point Pleasant</h3>
+        <p class="route-miles"><strong>28 miles</strong></p>
+        <p class="route-note">Launching before sunrise</p>
+      </div>
+
+      <div class="route-card" style="animation: cardIn 0.55s ease 0.41s both;">
+        <div class="day-badge">
+          <span class="day-num">Day 5</span>
+          <span class="day-date">Sep 4</span>
+        </div>
+        <h3>Point Pleasant &rarr; Sandy Hook</h3>
+        <p class="route-miles"><strong>31 miles</strong> &mdash; longest day</p>
+        <p class="route-note">Launching before sunrise</p>
+      </div>
+
+      <div class="route-card day-6" style="animation: cardIn 0.55s ease 0.50s both;">
+        <span class="join-badge">Join Us</span>
+        <div class="day-badge">
+          <span class="day-num">Day 6</span>
+          <span class="day-date">Sep 5</span>
+        </div>
+        <h3>Sandy Hook &rarr; Liberty Island</h3>
+        <p class="route-miles"><strong>17 miles</strong> + 1.5 mi to Port Liberty</p>
+        <p class="route-note gold">Open to other boats &mdash; row the final leg with us</p>
+      </div>
+
+    </div>
+    <div class="route-total">
+      <div class="route-total-num">~147.5 miles</div>
+      <div class="route-total-label">Total &mdash; Cape May Lighthouse to Liberty Island</div>
+    </div>
+  </div>
+</section>
+
+<!-- WAVE navy-dark → sand -->
+<div class="wave" style="background:var(--navy-dark)">
+  <svg viewBox="0 0 1440 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,40 C360,8 720,56 1080,24 C1260,8 1380,44 1440,36 L1440,56 L0,56 Z" fill="#faf8f2"/>
+  </svg>
+</div>
+
+<!-- CAUSES -->
+<section class="causes-section" id="causes">
+  <div class="section-inner">
+    <div class="causes-header">
+      <span class="section-tag">Our Cause</span>
+      <h2 class="section-title">Who We Row For</h2>
+      <p class="causes-sub">Every dollar raised supports two organizations dedicated to beach safety and conservation along the New Jersey Shore.</p>
+    </div>
+    <div class="causes-grid">
+      <a href="https://asbpa.org/" target="_blank" rel="noopener" class="cause-card">
+        <div class="cause-icon">🌊</div>
+        <h3>American Shore &amp; Beach Preservation Association</h3>
+        <p>The nation's oldest coastal organization, dedicated to protecting and restoring beaches and shores for public use and conservation.</p>
+        <span class="cause-link">
+          Visit asbpa.org
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </a>
+      <a href="https://uppertownship.com/public-safety/beach-patrol/" target="_blank" rel="noopener" class="cause-card">
+        <div class="cause-icon">🚣</div>
+        <h3>Upper Township Beach Patrol Fund</h3>
+        <p>Supporting the lifeguards of Strathmere and Sea Isle City who protect thousands of swimmers along the Jersey Shore every summer.</p>
+        <span class="cause-link">
+          Visit UTBP Fund
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- PHOTO STRIP -->
+<div class="photo-strip">
+  <div class="strip-item">
+    <img src="brand_assets/Photos/IMG_8729.JPG" alt="Launching through surf">
+  </div>
+  <div class="strip-item">
+    <img src="brand_assets/Photos/IMG_4675.JPG" alt="Racing dories">
+  </div>
+  <div class="strip-item">
+    <img src="brand_assets/Photos/IMG_9387.jpg" alt="UTBP dory">
+  </div>
+  <div class="strip-item">
+    <img src="brand_assets/Photos/IMG_7340.JPG" alt="Rowing in the bay">
+  </div>
+</div>
+
+<!-- WAVE white → navy -->
+<div class="wave" style="background:white">
+  <svg viewBox="0 0 1440 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,16 C480,56 960,0 1440,36 L1440,56 L0,56 Z" fill="#162447"/>
+  </svg>
+</div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <span class="section-tag" style="color:var(--gold)">Get Involved</span>
+    <h2 class="cta-title">Ready to make<br>a difference?</h2>
+    <p class="cta-sub">Donate to the cause, become a sponsor, or sign up to join us on Day 6 — the final row to Liberty Island.</p>
+    <div class="cta-buttons">
+      <a href="/donate" class="btn-primary">Donate Now</a>
+      <a href="/sponsors" class="btn-outline-gold">Become a Sponsor</a>
+      <a href="/join" class="btn-outline-gold">Join Day 6</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="brand_assets/Logo/L2L_LOGO.PNG" alt="Lighthouse to Liberty Row">
+        <p class="footer-tagline">Cape May to Liberty Island &middot; 147 Miles by Sea</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <h4>Navigate</h4>
+          <a href="#about">About</a>
+          <a href="#route">The Route</a>
+          <a href="#causes">Our Cause</a>
+          <a href="/donate">Donate</a>
+        </div>
+        <div class="footer-col">
+          <h4>Get Involved</h4>
+          <a href="/sponsors">Become a Sponsor</a>
+          <a href="/join">Join the Row</a>
+          <a href="/admin">Admin Login</a>
+        </div>
+        <div class="footer-col">
+          <h4>Follow Along</h4>
+          <a href="https://www.instagram.com/lighthouse2libertyrow/" target="_blank" rel="noopener">@lighthouse2libertyrow</a>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/lighthouse2libertyrow/" target="_blank" rel="noopener" class="social-btn" aria-label="Instagram">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">&copy; 2026 Lighthouse to Liberty Row. All rights reserved.</p>
+      <p class="footer-copy">Benefiting ASBPA &amp; Upper Township Beach Patrol Fund</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script>
+  // Nav scroll
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+
+  // Mobile menu
+  function openMobileMenu() {
+    document.getElementById('mobileMenu').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMobileMenu() {
+    document.getElementById('mobileMenu').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function animateCounter(raised, goal, duration) {
+    const el   = document.getElementById('counterDisplay');
+    const fill = document.getElementById('progressFill');
+    const pct  = document.getElementById('pctLabel');
+    const rem  = document.getElementById('remLabel');
+    const t0   = performance.now();
+
+    (function tick(now) {
+      const p  = Math.min((now - t0) / duration, 1);
+      const ep = 1 - Math.pow(1 - p, 3);
+      const v  = Math.round(ep * raised);
+      const pv = Math.round((v / goal) * 100);
+      el.textContent   = formatCurrency(v);
+      fill.style.width = pv + '%';
+      pct.textContent  = pv + '% funded';
+      rem.textContent  = formatCurrency(goal - v) + ' remaining';
+      if (p < 1) requestAnimationFrame(tick);
+    })(t0);
+  }
+
+  // Trigger counter when visible, fetching live totals from Supabase
+  new IntersectionObserver(async (entries, obs) => {
+    if (entries[0].isIntersecting) {
+      obs.disconnect();
+      const summary = await getFundraiseSummary();
+      animateCounter(Number(summary.total_raised), Number(summary.goal), 1600);
+      document.getElementById('remLabel').dataset.goal = summary.goal;
+      const donorCount = document.getElementById('counterDisplay');
+      if (summary.donation_count > 0) {
+        document.querySelector('.counter-sub').innerHTML =
+          `<strong>${summary.donation_count} donor${summary.donation_count !== 1 ? 's' : ''}</strong> and counting — help us reach the goal.`;
+      }
+    }
+  }, { threshold: 0.3 }).observe(document.getElementById('donate'));
+
+  // Fade-in cause cards — single shared observer
+  const causeCards = Array.from(document.querySelectorAll('.cause-card'));
+  causeCards.forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = `opacity 0.55s ease ${i * 0.12}s, transform 0.55s ease ${i * 0.12}s`;
+  });
+  new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 }).observe(document.querySelector('.causes-grid'));
+</script>
+</body>
+</html>

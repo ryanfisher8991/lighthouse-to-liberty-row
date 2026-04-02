@@ -47,7 +47,42 @@
 - **Depth:** Surfaces should have a layering system (base → elevated → floating), not all sit at the same z-plane.
 
 ## Mobile Compatibility
-- Make sure all changes made towards the web design are also considered in the mobile format.
+
+### Screenshot Requirements
+- After every desktop screenshot pass, take a matching mobile screenshot at 390px width:
+  `node screenshot.mjs http://localhost:3000 mobile 390`
+- Also check tablet at 768px when layouts are complex:
+  `node screenshot.mjs http://localhost:3000 tablet 768`
+- Never consider a pass complete without reviewing both desktop and mobile screenshots.
+
+### Breakpoints to Target
+- **Mobile:** 390px (iPhone 14 — primary mobile target)
+- **Tablet:** 768px (`md:` in Tailwind)
+- **Desktop:** 1280px (`lg:` in Tailwind)
+
+### Navigation
+- On mobile, the nav must collapse — specify a hamburger menu, slide-out drawer, or bottom bar. Do not just shrink or hide the desktop nav without a replacement.
+- If not specified by the user, default to a hamburger that opens a full-width dropdown.
+
+### Touch Targets
+- Every tappable element (buttons, links, nav items) must be at least 44×44px. Use `min-h-[44px] min-w-[44px]` where needed.
+
+### Typography Scaling
+- Headings must scale down meaningfully — do not let `text-6xl` stay `text-6xl` on mobile.
+- Use responsive prefixes: e.g. `text-3xl md:text-5xl lg:text-6xl`.
+- Body text minimum `text-base` (16px) on mobile — never smaller.
+
+### Layout Reflow
+- All multi-column grids (`grid-cols-2`, `grid-cols-3`, etc.) must stack to single column on mobile unless explicitly told otherwise.
+- Flex rows must wrap or stack: use `flex-col md:flex-row`.
+- Hero sections: stack image below text on mobile by default, unless reference shows otherwise.
+
+### Hard Mobile Rules
+- **No horizontal scroll ever.** If content overflows horizontally on mobile, fix it — do not leave it.
+- Never hide content with `hidden md:block` without a mobile alternative. If something is hidden on mobile, there must be a deliberate reason stated.
+- Padding: use `px-4` minimum on mobile containers — never let content touch the screen edge.
+- Images must never overflow their containers — use `max-w-full` and `h-auto`.
+
 
 ## Hard Rules
 - Do not add sections, features, or content not in the reference
