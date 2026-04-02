@@ -201,9 +201,36 @@
     }
     .form-select-sm:focus { outline: none; border-color: var(--gold); }
 
+    /* MOBILE BOTTOM TAB BAR */
+    .mobile-tabs {
+      display: none;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--navy-dark);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      z-index: 100;
+      padding: 0;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .mobile-tabs-inner {
+      display: flex; align-items: stretch;
+    }
+    .mobile-tab {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; padding: 10px 4px 8px;
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,0.5); font-size: 0.6rem; font-weight: 600;
+      letter-spacing: 0.05em; text-transform: uppercase; text-decoration: none;
+      min-height: 56px; transition: color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mobile-tab .tab-icon { font-size: 1.2rem; line-height: 1; }
+    .mobile-tab.active { color: var(--gold-light); }
+    .mobile-tab:active { color: white; }
+
     @media (max-width: 768px) {
       .sidebar { display: none; }
-      .admin-main { padding: 20px 16px; }
+      .mobile-tabs { display: block; }
+      .admin-main { padding: 16px; padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
       .add-donation-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
@@ -237,23 +264,23 @@
     <img src="../brand_assets/Logo/L2L_LOGO2.png" alt="L2L" class="sidebar-logo">
 
     <span class="sidebar-label">Overview</span>
-    <button class="sidebar-item active" onclick="showPanel('dashboard', this)">
+    <button class="sidebar-item active" data-panel="dashboard" onclick="showPanel('dashboard', this)">
       <span class="icon">📊</span> Dashboard
     </button>
 
     <span class="sidebar-label">Manage</span>
-    <button class="sidebar-item" onclick="showPanel('donations', this)">
+    <button class="sidebar-item" data-panel="donations" onclick="showPanel('donations', this)">
       <span class="icon">💰</span> Donations
     </button>
-    <button class="sidebar-item" onclick="showPanel('sponsors', this)">
+    <button class="sidebar-item" data-panel="sponsors" onclick="showPanel('sponsors', this)">
       <span class="icon">🏢</span> Sponsors
     </button>
-    <button class="sidebar-item" onclick="showPanel('boats', this)">
+    <button class="sidebar-item" data-panel="boats" onclick="showPanel('boats', this)">
       <span class="icon">🚣</span> Boat Signups
     </button>
 
     <span class="sidebar-label">Config</span>
-    <button class="sidebar-item" onclick="showPanel('settings', this)">
+    <button class="sidebar-item" data-panel="settings" onclick="showPanel('settings', this)">
       <span class="icon">⚙️</span> Settings
     </button>
 
@@ -267,6 +294,30 @@
       <button class="logout-btn" onclick="doLogout()">Sign out</button>
     </div>
   </nav>
+
+  <!-- MOBILE BOTTOM TAB BAR -->
+  <div class="mobile-tabs" id="mobileTabs">
+    <div class="mobile-tabs-inner">
+      <button class="mobile-tab active" onclick="showPanel('dashboard', this)" data-panel="dashboard">
+        <span class="tab-icon">📊</span>Dash
+      </button>
+      <button class="mobile-tab" onclick="showPanel('donations', this)" data-panel="donations">
+        <span class="tab-icon">💰</span>Donations
+      </button>
+      <button class="mobile-tab" onclick="showPanel('sponsors', this)" data-panel="sponsors">
+        <span class="tab-icon">🏢</span>Sponsors
+      </button>
+      <button class="mobile-tab" onclick="showPanel('boats', this)" data-panel="boats">
+        <span class="tab-icon">🚣</span>Boats
+      </button>
+      <button class="mobile-tab" onclick="showPanel('settings', this)" data-panel="settings">
+        <span class="tab-icon">⚙️</span>Settings
+      </button>
+      <a href="/" class="mobile-tab">
+        <span class="tab-icon">🏠</span>Site
+      </a>
+    </div>
+  </div>
 
   <main class="admin-main">
 
@@ -501,8 +552,12 @@
   function showPanel(name, btn) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mobile-tab').forEach(b => b.classList.remove('active'));
     document.getElementById('panel-' + name).classList.add('active');
     btn.classList.add('active');
+    // sync the other nav (sidebar ↔ mobile tabs)
+    document.querySelectorAll('.mobile-tab[data-panel="' + name + '"],.sidebar-item[data-panel="' + name + '"]')
+      .forEach(b => b.classList.add('active'));
     const loaders = { donations: loadDonations, sponsors: loadSponsors, boats: loadBoats };
     if (loaders[name]) loaders[name]();
   }
