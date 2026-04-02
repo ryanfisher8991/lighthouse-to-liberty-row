@@ -31,8 +31,26 @@
     }
     .nav-links a:hover { color: var(--gold-light); }
     .nav-links a.active { color: var(--gold-light); }
-    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
     .hamburger span { display: block; width: 22px; height: 2px; background: white; border-radius: 2px; }
+    .mobile-menu {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(12,21,35,0.98);
+      flex-direction: column; align-items: center; justify-content: center; gap: 28px;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-close {
+      position: absolute; top: 20px; right: 24px;
+      background: none; border: none; color: rgba(255,255,255,0.6);
+      font-size: 1.5rem; cursor: pointer; padding: 8px; transition: color 0.2s;
+    }
+    .mobile-close:hover { color: white; }
+    .mobile-menu a {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 700; color: white;
+      text-decoration: none; transition: color 0.2s;
+    }
+    .mobile-menu a:hover { color: var(--gold-light); }
 
     .page-header { background: var(--navy); padding: 56px 48px 48px; text-align: center; }
     .page-tag {
@@ -253,6 +271,14 @@
 </head>
 <body>
 
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close">✕</button>
+  <a href="/" onclick="document.getElementById('mobileMenu').classList.remove('open')">Home</a>
+  <a href="/donate" onclick="document.getElementById('mobileMenu').classList.remove('open')">Donate</a>
+  <a href="/sponsors" onclick="document.getElementById('mobileMenu').classList.remove('open')">Sponsors</a>
+  <a href="/join" onclick="document.getElementById('mobileMenu').classList.remove('open')">Join Us</a>
+</div>
+
 <nav class="nav">
   <a href="/"><img src="../brand_assets/Logo/L2L_LOGO2.png" alt="Lighthouse to Liberty Row"></a>
   <div class="nav-links">
@@ -261,7 +287,7 @@
     <a href="/sponsors" class="active">Sponsors</a>
     <a href="/join">Join Us</a>
   </div>
-  <div class="hamburger" onclick="document.getElementById('mobileNav').classList.toggle('open')" aria-label="Menu">
+  <div class="hamburger" onclick="document.getElementById('mobileMenu').classList.add('open')" aria-label="Menu">
     <span></span><span></span><span></span>
   </div>
 </nav>

@@ -199,6 +199,27 @@
     .footer-simple a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.8rem; }
     .footer-simple a:hover { color: var(--gold-light); }
 
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: white; border-radius: 2px; }
+    .mobile-menu {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(12,21,35,0.98);
+      flex-direction: column; align-items: center; justify-content: center; gap: 28px;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-close {
+      position: absolute; top: 20px; right: 24px;
+      background: none; border: none; color: rgba(255,255,255,0.6);
+      font-size: 1.5rem; cursor: pointer; padding: 8px; transition: color 0.2s;
+    }
+    .mobile-close:hover { color: white; }
+    .mobile-menu a {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 700; color: white;
+      text-decoration: none; transition: color 0.2s;
+    }
+    .mobile-menu a:hover { color: var(--gold-light); }
+
     @media (max-width: 600px) {
       .nav { padding: 12px 20px; }
       .page-header { padding: 40px 20px 36px; }
@@ -206,10 +227,19 @@
       .donate-card { padding: 24px 20px; }
       .amount-grid { grid-template-columns: repeat(2, 1fr); }
       .nav-links { display: none; }
+      .hamburger { display: flex; }
     }
   </style>
 </head>
 <body>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close">✕</button>
+  <a href="/" onclick="document.getElementById('mobileMenu').classList.remove('open')">Home</a>
+  <a href="/donate" onclick="document.getElementById('mobileMenu').classList.remove('open')">Donate</a>
+  <a href="/sponsors" onclick="document.getElementById('mobileMenu').classList.remove('open')">Sponsors</a>
+  <a href="/join" onclick="document.getElementById('mobileMenu').classList.remove('open')">Join Us</a>
+</div>
 
 <nav class="nav">
   <a href="/"><img src="../brand_assets/Logo/L2L_LOGO2.png" alt="Lighthouse to Liberty Row"></a>
@@ -218,6 +248,9 @@
     <a href="/donate" class="active">Donate</a>
     <a href="/sponsors">Sponsors</a>
     <a href="/join">Join Us</a>
+  </div>
+  <div class="hamburger" onclick="document.getElementById('mobileMenu').classList.add('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
   </div>
 </nav>
 
