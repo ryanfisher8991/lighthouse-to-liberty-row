@@ -574,8 +574,19 @@
       .mission-photo img { height: 280px; }
       .route-grid { grid-template-columns: 1fr 1fr; }
       .causes-grid { grid-template-columns: 1fr; }
-      .photo-strip { height: 180px; }
-      .strip-item:nth-child(3), .strip-item:nth-child(4) { display: none; }
+      .photo-strip {
+        height: 200px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+      }
+      .photo-strip .strip-item {
+        flex: 0 0 80vw;
+        scroll-snap-align: start;
+      }
+      .photo-strip .strip-item:nth-child(3),
+      .photo-strip .strip-item:nth-child(4) { display: flex; }
       .footer { padding: 48px 24px 28px; }
       .footer-top { flex-direction: column; }
       .footer-bottom { flex-direction: column; text-align: center; }
@@ -1009,6 +1020,19 @@ try {
     el.style.transition = `opacity 0.55s ease ${i * 0.12}s, transform 0.55s ease ${i * 0.12}s`;
     causeObserver.observe(el);
   });
+
+  // Auto-scroll photo strip on mobile
+  if (window.innerWidth <= 900) {
+    const strip = document.querySelector('.photo-strip');
+    if (strip) {
+      let current = 0;
+      const items = strip.querySelectorAll('.strip-item');
+      setInterval(() => {
+        current = (current + 1) % items.length;
+        items[current].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+      }, 3000);
+    }
+  }
 } catch(e) { console.error('Page script error:', e); }
 </script>
 </body>
