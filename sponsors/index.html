@@ -400,15 +400,54 @@
         <label class="form-label">T-Shirt Size(s) <span class="req">*</span></label>
         <div id="shirtSizeNote" class="shirt-count-note"></div>
         <div class="shirt-sizes" id="shirtSizes">
-          ${['XS','S','M','L','XL','XXL'].map(s => `
           <div class="shirt-size-item">
-            <span class="shirt-size-label">${s}</span>
+            <span class="shirt-size-label">XS</span>
             <div class="qty-control">
-              <button type="button" class="qty-btn" onclick="changeQty('${s}',-1)">−</button>
-              <span class="qty-val" id="qty-${s}">0</span>
-              <button type="button" class="qty-btn" onclick="changeQty('${s}',1)">+</button>
+              <button type="button" class="qty-btn" onclick="changeQty('XS',-1)">−</button>
+              <span class="qty-val" id="qty-XS">0</span>
+              <button type="button" class="qty-btn" onclick="changeQty('XS',1)">+</button>
             </div>
-          </div>`).join('')}
+          </div>
+          <div class="shirt-size-item">
+            <span class="shirt-size-label">S</span>
+            <div class="qty-control">
+              <button type="button" class="qty-btn" onclick="changeQty('S',-1)">−</button>
+              <span class="qty-val" id="qty-S">0</span>
+              <button type="button" class="qty-btn" onclick="changeQty('S',1)">+</button>
+            </div>
+          </div>
+          <div class="shirt-size-item">
+            <span class="shirt-size-label">M</span>
+            <div class="qty-control">
+              <button type="button" class="qty-btn" onclick="changeQty('M',-1)">−</button>
+              <span class="qty-val" id="qty-M">0</span>
+              <button type="button" class="qty-btn" onclick="changeQty('M',1)">+</button>
+            </div>
+          </div>
+          <div class="shirt-size-item">
+            <span class="shirt-size-label">L</span>
+            <div class="qty-control">
+              <button type="button" class="qty-btn" onclick="changeQty('L',-1)">−</button>
+              <span class="qty-val" id="qty-L">0</span>
+              <button type="button" class="qty-btn" onclick="changeQty('L',1)">+</button>
+            </div>
+          </div>
+          <div class="shirt-size-item">
+            <span class="shirt-size-label">XL</span>
+            <div class="qty-control">
+              <button type="button" class="qty-btn" onclick="changeQty('XL',-1)">−</button>
+              <span class="qty-val" id="qty-XL">0</span>
+              <button type="button" class="qty-btn" onclick="changeQty('XL',1)">+</button>
+            </div>
+          </div>
+          <div class="shirt-size-item">
+            <span class="shirt-size-label">XXL</span>
+            <div class="qty-control">
+              <button type="button" class="qty-btn" onclick="changeQty('XXL',-1)">−</button>
+              <span class="qty-val" id="qty-XXL">0</span>
+              <button type="button" class="qty-btn" onclick="changeQty('XXL',1)">+</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
