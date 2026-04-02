@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lighthouse to Liberty Row — New Jersey</title>
   <meta name="description" content="Ryan Fisher and Kyle Rumaker row 147 miles from Cape May to Liberty Island to raise $10,000 for beach safety. August 31 – September 5, 2026.">
+  <meta name="theme-color" content="#162447">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/brand_assets/Logo/L2L_LOGO2.png">
+  <link rel="icon" type="image/png" href="/brand_assets/Logo/L2L_LOGO2.png">
+  <meta property="og:title" content="Lighthouse to Liberty Row">
+  <meta property="og:description" content="Ryan Fisher and Kyle Rumaker row 147 miles from Cape May to Liberty Island to raise $10,000 for beach safety. August 31 – September 5, 2026.">
+  <meta property="og:image" content="https://www.lighthouse2libertyrow.com/brand_assets/Logo/L2L_LOGO.PNG">
+  <meta property="og:url" content="https://www.lighthouse2libertyrow.com">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://www.lighthouse2libertyrow.com/brand_assets/Logo/L2L_LOGO.PNG">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -1034,6 +1045,13 @@ try {
     }
   }
 } catch(e) { console.error('Page script error:', e); }
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,24 @@
+{
+  "name": "Lighthouse to Liberty Row",
+  "short_name": "L2L Row",
+  "description": "Ryan Fisher and Kyle Rumaker row 147 miles from Cape May to Liberty Island to raise funds for beach safety.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c1523",
+  "theme_color": "#162447",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/brand_assets/Logo/L2L_LOGO2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/brand_assets/Logo/L2L_LOGO2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
