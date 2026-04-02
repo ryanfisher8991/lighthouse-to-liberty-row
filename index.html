@@ -81,7 +81,8 @@
       text-transform: uppercase; color: var(--navy-dark);
       text-decoration: none; padding: 9px 22px;
       background: var(--gold); border-radius: 3px;
-      transition: background 0.2s ease, transform 0.15s ease;
+      box-shadow: 0 2px 12px rgba(201,148,47,0.5);
+      transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
     }
     .btn-donate-nav:hover { background: var(--gold-light); transform: translateY(-1px); }
     .btn-donate-nav:active { transform: translateY(0); }
@@ -560,6 +561,7 @@
       .nav.scrolled { padding: 10px 24px; }
       .nav-links { display: none; }
       .btn-login { display: none; }
+      .btn-donate-nav { display: inline-block; }
       .hamburger { display: flex; }
 
       .hero-stats { gap: 0; }
