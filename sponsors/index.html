@@ -151,15 +151,32 @@
     .form-input:focus, .form-select:focus { outline: none; border-color: var(--gold); }
 
     .shirt-section { margin-top: 8px; }
-    .shirt-sizes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .shirt-size-btn {
-      padding: 7px 14px; border: 1.5px solid #e2e8f0; border-radius: 3px;
-      font-size: 0.8rem; font-weight: 600; color: var(--navy);
-      background: white; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    .shirt-sizes { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+    .shirt-size-item {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
     }
-    .shirt-size-btn:hover { border-color: var(--gold); }
-    .shirt-size-btn.selected { border-color: var(--gold); background: rgba(201,148,47,0.08); color: var(--gold); }
-    .shirt-size-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+    .shirt-size-label {
+      font-size: 0.72rem; font-weight: 700; color: var(--navy); letter-spacing: 0.04em;
+    }
+    .qty-control {
+      display: flex; align-items: center; border: 1.5px solid #e2e8f0; border-radius: 4px;
+      overflow: hidden; transition: border-color 0.2s;
+    }
+    .qty-control:focus-within { border-color: var(--gold); }
+    .qty-btn {
+      width: 28px; height: 32px; background: white; border: none;
+      font-size: 1rem; color: var(--navy); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s; flex-shrink: 0;
+    }
+    .qty-btn:hover { background: rgba(201,148,47,0.08); color: var(--gold); }
+    .qty-btn:active { background: rgba(201,148,47,0.15); }
+    .qty-val {
+      width: 28px; text-align: center; font-size: 0.875rem; font-weight: 600;
+      color: var(--navy); border: none; background: white;
+      border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;
+      line-height: 32px;
+    }
     .shirt-count-note { font-size: 0.78rem; color: #6b7280; margin-top: 6px; }
 
     .logo-upload-area {
@@ -242,7 +259,7 @@
     <a href="/">Home</a>
     <a href="/donate">Donate</a>
     <a href="/sponsors" class="active">Sponsors</a>
-    <a href="/join">Join Day 6</a>
+    <a href="/join">Join Us</a>
   </div>
   <div class="hamburger" onclick="document.getElementById('mobileNav').classList.toggle('open')" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -312,7 +329,7 @@
       <div class="tier-body">
         <ul class="tier-perks">
           <li>Business name &amp; logo on the website — featured placement</li>
-          <li>Logo on the event T-shirt — <strong>larger, top placement</strong></li>
+          <li>Logo on the event T-shirt — larger, top placement</li>
           <li>5 event T-shirts (sizes of your choice)</li>
           <li>Sponsor sticker on the boat</li>
           <li>Thank you shoutout on Instagram</li>
@@ -383,12 +400,15 @@
         <label class="form-label">T-Shirt Size(s) <span class="req">*</span></label>
         <div id="shirtSizeNote" class="shirt-count-note"></div>
         <div class="shirt-sizes" id="shirtSizes">
-          <button type="button" class="shirt-size-btn" data-size="XS" onclick="toggleSize(this)">XS</button>
-          <button type="button" class="shirt-size-btn" data-size="S"  onclick="toggleSize(this)">S</button>
-          <button type="button" class="shirt-size-btn" data-size="M"  onclick="toggleSize(this)">M</button>
-          <button type="button" class="shirt-size-btn" data-size="L"  onclick="toggleSize(this)">L</button>
-          <button type="button" class="shirt-size-btn" data-size="XL" onclick="toggleSize(this)">XL</button>
-          <button type="button" class="shirt-size-btn" data-size="XXL" onclick="toggleSize(this)">XXL</button>
+          ${['XS','S','M','L','XL','XXL'].map(s => `
+          <div class="shirt-size-item">
+            <span class="shirt-size-label">${s}</span>
+            <div class="qty-control">
+              <button type="button" class="qty-btn" onclick="changeQty('${s}',-1)">−</button>
+              <span class="qty-val" id="qty-${s}">0</span>
+              <button type="button" class="qty-btn" onclick="changeQty('${s}',1)">+</button>
+            </div>
+          </div>`).join('')}
         </div>
       </div>
     </div>
@@ -427,27 +447,43 @@
       `Select ${SHIRT_COUNTS[tier]} shirt size${SHIRT_COUNTS[tier] > 1 ? 's' : ''}`;
     document.getElementById('sponsorForm').classList.add('open');
     document.getElementById('sponsorForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // Reset size selections
-    document.querySelectorAll('.shirt-size-btn').forEach(b => b.classList.remove('selected'));
+    // Reset size quantities
+    SIZES.forEach(s => {
+      const el = document.getElementById('qty-' + s);
+      el.textContent = '0';
+      el.style.color = 'var(--navy)';
+    });
   }
 
   function closeForm() {
     document.getElementById('sponsorForm').classList.remove('open');
   }
 
-  function getSelectedSizes() {
-    return Array.from(document.querySelectorAll('.shirt-size-btn.selected')).map(b => b.dataset.size);
+  const SIZES = ['XS','S','M','L','XL','XXL'];
+
+  function getTotalSelected() {
+    return SIZES.reduce((sum, s) => sum + getQty(s), 0);
   }
 
-  function toggleSize(btn) {
+  function getQty(size) {
+    return parseInt(document.getElementById('qty-' + size).textContent) || 0;
+  }
+
+  function changeQty(size, delta) {
     const tier = document.getElementById('selectedTier').value;
     const max  = SHIRT_COUNTS[tier] || 1;
-    const selected = getSelectedSizes();
-    if (btn.classList.contains('selected')) {
-      btn.classList.remove('selected');
-    } else if (selected.length < max) {
-      btn.classList.add('selected');
-    }
+    const el   = document.getElementById('qty-' + size);
+    const current = parseInt(el.textContent) || 0;
+    const total   = getTotalSelected();
+    const next    = current + delta;
+    if (next < 0) return;
+    if (delta > 0 && total >= max) return;
+    el.textContent = next;
+    el.style.color = next > 0 ? 'var(--gold)' : 'var(--navy)';
+  }
+
+  function getSelectedSizes() {
+    return SIZES.flatMap(s => Array(getQty(s)).fill(s));
   }
 
   function previewLogo(input) {

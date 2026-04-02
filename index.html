@@ -600,7 +600,7 @@
   <a href="#donate" onclick="closeMobileMenu()">Donate</a>
   <a href="#causes" onclick="closeMobileMenu()">Our Cause</a>
   <a href="/sponsors" onclick="closeMobileMenu()">Sponsors</a>
-  <a href="/join" onclick="closeMobileMenu()">Join Day 6</a>
+  <a href="/join" onclick="closeMobileMenu()">Join Us</a>
   <a href="/admin" onclick="closeMobileMenu()" class="mobile-sub">Login</a>
 </div>
 
@@ -612,7 +612,7 @@
     <a href="#route">The Route</a>
     <a href="#causes">Our Cause</a>
     <a href="/sponsors">Sponsors</a>
-    <a href="/join">Join Day 6</a>
+    <a href="/join">Join Us</a>
   </div>
   <div class="nav-actions">
     <a href="/admin" class="btn-login">Login</a>
@@ -883,7 +883,7 @@
     <div class="cta-buttons">
       <a href="/donate" class="btn-primary">Donate Now</a>
       <a href="/sponsors" class="btn-outline-gold">Become a Sponsor</a>
-      <a href="/join" class="btn-outline-gold">Join Day 6</a>
+      <a href="/join" class="btn-outline-gold">Join Us</a>
     </div>
   </div>
 </section>
@@ -986,14 +986,8 @@
     }
   }, { threshold: 0.3 }).observe(document.getElementById('donate'));
 
-  // Fade-in cause cards — single shared observer
-  const causeCards = Array.from(document.querySelectorAll('.cause-card'));
-  causeCards.forEach((el, i) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(16px)';
-    el.style.transition = `opacity 0.55s ease ${i * 0.12}s, transform 0.55s ease ${i * 0.12}s`;
-  });
-  new IntersectionObserver((entries, obs) => {
+  // Fade-in cause cards
+  const causeObserver = new IntersectionObserver((entries, obs) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.style.opacity = '1';
@@ -1001,7 +995,14 @@
         obs.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.15 }).observe(document.querySelector('.causes-grid'));
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.cause-card').forEach((el, i) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = `opacity 0.55s ease ${i * 0.12}s, transform 0.55s ease ${i * 0.12}s`;
+    causeObserver.observe(el);
+  });
 </script>
 </body>
 </html>
