@@ -212,7 +212,7 @@
 <body>
 
 <nav class="nav">
-  <a href="/"><img src="../brand_assets/Logo/L2L_LOGO.PNG" alt="Lighthouse to Liberty Row"></a>
+  <a href="/"><img src="../brand_assets/Logo/L2L_LOGO2.png" alt="Lighthouse to Liberty Row"></a>
   <div class="nav-links">
     <a href="/">Home</a>
     <a href="/donate" class="active">Donate</a>
@@ -331,7 +331,7 @@
 
     const { error } = await db.from('donations').insert({
       amount,
-      donor_name: isAnon ? null : (name || null),
+      donor_name: name || null,  // always store name for admin tracking; is_anonymous controls public display
       is_anonymous: isAnon,
       source: DONATION_SOURCE.STRIPE,
       is_public: true,

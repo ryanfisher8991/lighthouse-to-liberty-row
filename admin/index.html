@@ -209,7 +209,7 @@
 <!-- LOGIN -->
 <div class="login-page" id="loginPage">
   <div class="login-card">
-    <img src="../brand_assets/Logo/L2L_LOGO.PNG" alt="Lighthouse to Liberty Row" class="login-logo">
+    <img src="../brand_assets/Logo/L2L_LOGO2.png" alt="Lighthouse to Liberty Row" class="login-logo">
     <h1 class="login-title">Admin Login</h1>
     <p class="login-sub">Lighthouse to Liberty Row — Admin only</p>
     <div class="login-error" id="loginError"></div>
@@ -230,7 +230,7 @@
 <!-- ADMIN DASHBOARD -->
 <div class="admin-page" id="adminPage">
   <nav class="sidebar">
-    <img src="../brand_assets/Logo/L2L_LOGO.PNG" alt="L2L" class="sidebar-logo">
+    <img src="../brand_assets/Logo/L2L_LOGO2.png" alt="L2L" class="sidebar-logo">
 
     <span class="sidebar-label">Overview</span>
     <button class="sidebar-item active" onclick="showPanel('dashboard', this)">
@@ -491,16 +491,25 @@
     el.innerHTML = `
       <table class="data-table">
         <thead><tr>
-          <th>Date</th><th>Donor</th><th>Amount</th><th>Source</th><th>Public</th><th>Actions</th>
+          <th>Date</th><th>Donor (Admin View)</th><th>Amount</th><th>Source</th><th>Public</th><th>Actions</th>
         </tr></thead>
         <tbody>
           ${data.map(d => `
             <tr>
               <td style="white-space:nowrap;color:var(--gray)">${formatDate(d.created_at)}</td>
-              <td>${d.is_anonymous ? '<span class="badge anon">Anonymous</span>' : (d.donor_name || '—')}</td>
+              <td>
+                ${d.donor_name ? `<strong>${d.donor_name}</strong>` : '<span style="color:var(--gray)">No name</span>'}
+                ${d.is_anonymous ? ' <span class="badge anon">shows as anon</span>' : ''}
+              </td>
               <td><strong>${formatCurrency(d.amount)}</strong></td>
               <td><span class="badge ${d.source}">${d.source}</span></td>
-              <td>${d.is_public ? '✓' : '—'}</td>
+              <td>
+                <label class="toggle" title="${d.is_public ? 'Click to make private' : 'Click to make public'}">
+                  <input type="checkbox" ${d.is_public ? 'checked' : ''}
+                    onchange="toggleDonationPublic('${d.id}', this.checked)">
+                  <span class="toggle-slider"></span>
+                </label>
+              </td>
               <td>
                 <button class="action-btn delete" onclick="deleteDonation('${d.id}')">Delete</button>
               </td>
@@ -508,6 +517,11 @@
           `).join('')}
         </tbody>
       </table>`;
+  }
+
+  async function toggleDonationPublic(id, isPublic) {
+    const { error } = await db.from('donations').update({ is_public: isPublic }).eq('id', id);
+    if (error) { console.error('toggleDonationPublic:', error); alert('Failed to update.'); }
   }
 
   async function addManualDonation() {
@@ -519,9 +533,9 @@
 
     const { error } = await db.from('donations').insert({
       amount, source,
-      donor_name:    isAnon ? null : (name || null),
-      is_anonymous:  isAnon,
-      is_public:     true,
+      donor_name:     name || null,   // always store the name for admin tracking
+      is_anonymous:   isAnon,         // controls how it shows publicly
+      is_public:      true,
       added_by_admin: true
     });
     if (error) { console.error('addManualDonation:', error); alert('Failed to add.'); return; }
