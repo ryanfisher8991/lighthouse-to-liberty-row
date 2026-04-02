@@ -188,16 +188,19 @@
 
     /* ADD DONATION FORM */
     .add-donation-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 20px; }
+    .sponsor-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-label-sm { font-size: 0.75rem; font-weight: 600; color: var(--navy); }
     .form-input-sm {
-      padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 4px;
+      width: 100%; padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 4px;
       font-size: 0.875rem; color: var(--navy); font-family: 'Inter', sans-serif;
+      min-width: 0;
     }
     .form-input-sm:focus { outline: none; border-color: var(--gold); }
     .form-select-sm {
-      padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 4px;
+      width: 100%; padding: 9px 12px; border: 1.5px solid #e2e8f0; border-radius: 4px;
       font-size: 0.875rem; color: var(--navy); background: white;
+      min-width: 0;
     }
     .form-select-sm:focus { outline: none; border-color: var(--gold); }
 
@@ -231,7 +234,8 @@
       .sidebar { display: none; }
       .mobile-tabs { display: block; }
       .admin-main { padding: 16px; padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
-      .add-donation-grid { grid-template-columns: 1fr 1fr; }
+      .add-donation-grid { grid-template-columns: 1fr; }
+      .sponsor-form-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -395,7 +399,7 @@
 
       <div class="card">
         <div class="card-title">Add Sponsor Manually</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+        <div class="sponsor-form-grid">
           <div class="form-group">
             <label class="form-label-sm">Business Name *</label>
             <input type="text" id="sp-bizname" class="form-input-sm" placeholder="Acme Co.">
