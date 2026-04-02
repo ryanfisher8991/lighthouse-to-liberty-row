@@ -186,6 +186,27 @@
 
     .empty-state { text-align: center; padding: 32px; color: var(--gray); font-size: 0.875rem; font-style: italic; }
 
+    /* MOBILE RECORD CARDS (replaces tables on small screens) */
+    .record-cards { display: none; }
+    .record-card {
+      border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 16px;
+      margin-bottom: 10px; background: #fafbfc;
+    }
+    .record-card-row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 8px; margin-bottom: 6px; flex-wrap: wrap;
+    }
+    .record-card-row:last-child { margin-bottom: 0; }
+    .record-card-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); }
+    .record-card-val { font-size: 0.875rem; color: var(--navy); text-align: right; word-break: break-word; max-width: 60%; }
+    .record-card-actions { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; flex-wrap: wrap; }
+    .record-card-actions .action-btn { flex: 1; min-width: 80px; text-align: center; min-height: 36px; }
+
+    @media (max-width: 768px) {
+      .data-table-wrap { display: none; }
+      .record-cards { display: block; }
+    }
+
     /* ADD DONATION FORM */
     .add-donation-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; margin-bottom: 20px; }
     .sponsor-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
@@ -600,40 +621,77 @@
       .select('*').order('created_at', { ascending: false }).limit(200);
     if (error || !data?.length) { el.innerHTML = '<div class="empty-state">No donations yet.</div>'; return; }
 
+    const donorCell = d => d.donor_name
+      ? `<strong>${d.donor_name}</strong>${d.is_anonymous ? ' <span class="badge anon">anon</span>' : ''}`
+      : `<span style="color:var(--gray)">No name</span>${d.is_anonymous ? ' <span class="badge anon">anon</span>' : ''}`;
+
     el.innerHTML = `
-      <table class="data-table">
-        <thead><tr>
-          <th>Date</th><th>Donor (Admin View)</th><th>Amount</th><th>Source</th><th>Public</th><th>Actions</th>
-        </tr></thead>
-        <tbody>
-          ${data.map(d => `
-            <tr>
-              <td style="white-space:nowrap;color:var(--gray)">${formatDate(d.created_at)}</td>
-              <td>
-                ${d.donor_name ? `<strong>${d.donor_name}</strong>` : '<span style="color:var(--gray)">No name</span>'}
-                ${d.is_anonymous ? ' <span class="badge anon">shows as anon</span>' : ''}
-              </td>
-              <td><strong>${formatCurrency(d.amount)}</strong></td>
-              <td><span class="badge ${d.source}">${d.source}</span></td>
-              <td>
-                <label class="toggle" title="${d.is_public ? 'Click to make private' : 'Click to make public'}">
-                  <input type="checkbox" ${d.is_public ? 'checked' : ''}
-                    onchange="toggleDonationPublic('${d.id}', this.checked)">
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Date</th><th>Donor (Admin View)</th><th>Amount</th><th>Source</th><th>Show Anon</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            ${data.map(d => `
+              <tr>
+                <td style="white-space:nowrap;color:var(--gray)">${formatDate(d.created_at)}</td>
+                <td>${donorCell(d)}</td>
+                <td><strong>${formatCurrency(d.amount)}</strong></td>
+                <td><span class="badge ${d.source}">${d.source}</span></td>
+                <td>
+                  <label class="toggle" title="${d.is_anonymous ? 'Showing as anonymous — click to show name' : 'Showing name — click to show as anonymous'}">
+                    <input type="checkbox" ${d.is_anonymous ? 'checked' : ''}
+                      onchange="toggleDonationAnon('${d.id}', this.checked)">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </td>
+                <td>
+                  <button class="action-btn delete" onclick="deleteDonation('${d.id}')">Delete</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="record-cards">
+        ${data.map(d => `
+          <div class="record-card">
+            <div class="record-card-row">
+              <span class="record-card-label">Donor</span>
+              <span class="record-card-val">${donorCell(d)}</span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Amount</span>
+              <span class="record-card-val"><strong>${formatCurrency(d.amount)}</strong></span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Source</span>
+              <span class="record-card-val"><span class="badge ${d.source}">${d.source}</span></span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Date</span>
+              <span class="record-card-val" style="color:var(--gray)">${formatDate(d.created_at)}</span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Show Anon</span>
+              <span class="record-card-val">
+                <label class="toggle">
+                  <input type="checkbox" ${d.is_anonymous ? 'checked' : ''} onchange="toggleDonationAnon('${d.id}', this.checked)">
                   <span class="toggle-slider"></span>
                 </label>
-              </td>
-              <td>
-                <button class="action-btn delete" onclick="deleteDonation('${d.id}')">Delete</button>
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>`;
+              </span>
+            </div>
+            <div class="record-card-actions">
+              <button class="action-btn delete" onclick="deleteDonation('${d.id}')">Delete</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
   }
 
-  async function toggleDonationPublic(id, isPublic) {
-    const { error } = await db.from('donations').update({ is_public: isPublic }).eq('id', id);
-    if (error) { console.error('toggleDonationPublic:', error); alert('Failed to update.'); }
+  async function toggleDonationAnon(id, isAnon) {
+    const { error } = await db.from('donations').update({ is_anonymous: isAnon }).eq('id', id);
+    if (error) { console.error('toggleDonationAnon:', error); alert('Failed to update.'); }
   }
 
   async function addManualDonation() {
@@ -674,33 +732,68 @@
     if (error || !data?.length) { el.innerHTML = '<div class="empty-state">No sponsor applications yet.</div>'; return; }
 
     el.innerHTML = `
-      <table class="data-table">
-        <thead><tr>
-          <th>Business</th><th>Tier</th><th>Contact</th><th>Payment</th><th>Status</th><th>Actions</th>
-        </tr></thead>
-        <tbody>
-          ${data.map(s => `
-            <tr>
-              <td>
-                <strong>${s.business_name}</strong><br>
-                ${s.website_url ? `<a href="${s.website_url}" target="_blank" style="font-size:0.78rem;color:var(--gold)">${s.website_url}</a>` : ''}
-                ${s.logo_url ? `<br><a href="${s.logo_url}" target="_blank" style="font-size:0.78rem;color:var(--gray)">View logo</a>` : ''}
-              </td>
-              <td><span class="badge ${s.tier}">${s.tier}</span></td>
-              <td style="font-size:0.82rem">
-                ${s.contact_name}${s.contact_title ? `, ${s.contact_title}` : ''}<br>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Business</th><th>Tier</th><th>Contact</th><th>Payment</th><th>Status</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            ${data.map(s => `
+              <tr>
+                <td>
+                  <strong>${s.business_name}</strong><br>
+                  ${s.website_url ? `<a href="${s.website_url}" target="_blank" style="font-size:0.78rem;color:var(--gold)">${s.website_url}</a>` : ''}
+                  ${s.logo_url ? `<br><a href="${s.logo_url}" target="_blank" style="font-size:0.78rem;color:var(--gray)">View logo</a>` : ''}
+                </td>
+                <td><span class="badge ${s.tier}">${s.tier}</span></td>
+                <td style="font-size:0.82rem">
+                  ${s.contact_name}${s.contact_title ? `, ${s.contact_title}` : ''}<br>
+                  <a href="mailto:${s.contact_email}" style="color:var(--gold)">${s.contact_email}</a>
+                </td>
+                <td><span class="badge ${s.payment_status}">${s.payment_status}</span></td>
+                <td>${s.approved ? '<span class="badge approved">Approved</span>' : '—'}</td>
+                <td>
+                  ${!s.approved ? `<button class="action-btn approve" onclick="approveSponsor('${s.id}')">Approve</button>` : ''}
+                  <button class="action-btn delete" onclick="deleteSponsor('${s.id}')">Delete</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="record-cards">
+        ${data.map(s => `
+          <div class="record-card">
+            <div class="record-card-row">
+              <span class="record-card-label">Business</span>
+              <span class="record-card-val"><strong>${s.business_name}</strong></span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Tier</span>
+              <span class="record-card-val"><span class="badge ${s.tier}">${s.tier}</span></span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Contact</span>
+              <span class="record-card-val" style="font-size:0.82rem">
+                ${s.contact_name}<br>
                 <a href="mailto:${s.contact_email}" style="color:var(--gold)">${s.contact_email}</a>
-              </td>
-              <td><span class="badge ${s.payment_status}">${s.payment_status}</span></td>
-              <td>${s.approved ? '<span class="badge approved">Approved</span>' : '—'}</td>
-              <td>
-                ${!s.approved ? `<button class="action-btn approve" onclick="approveSponsor('${s.id}')">Approve</button>` : ''}
-                <button class="action-btn delete" onclick="deleteSponsor('${s.id}')">Delete</button>
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>`;
+              </span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Payment</span>
+              <span class="record-card-val"><span class="badge ${s.payment_status}">${s.payment_status}</span></span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Status</span>
+              <span class="record-card-val">${s.approved ? '<span class="badge approved">Approved</span>' : '—'}</span>
+            </div>
+            <div class="record-card-actions">
+              ${!s.approved ? `<button class="action-btn approve" onclick="approveSponsor('${s.id}')">Approve</button>` : ''}
+              <button class="action-btn delete" onclick="deleteSponsor('${s.id}')">Delete</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
   }
 
   async function adminAddSponsor() {
