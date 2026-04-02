@@ -1026,10 +1026,10 @@ try {
     const strip = document.querySelector('.photo-strip');
     if (strip) {
       let current = 0;
-      const items = strip.querySelectorAll('.strip-item');
       setInterval(() => {
+        const items = strip.querySelectorAll('.strip-item');
         current = (current + 1) % items.length;
-        items[current].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+        strip.scrollTo({ left: items[current].offsetLeft, behavior: 'smooth' });
       }, 3000);
     }
   }
