@@ -319,12 +319,14 @@
     </div>
 
     <a href="https://venmo.com/kyle-rumaker" target="_blank" rel="noopener"
+       id="venmoBtn"
        style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;padding:13px;
               background:#008CFF;color:white;border-radius:4px;text-decoration:none;
               font-size:0.85rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
               transition:background 0.2s,transform 0.15s;"
        onmouseover="this.style.background='#0077DD';this.style.transform='translateY(-1px)'"
-       onmouseout="this.style.background='#008CFF';this.style.transform='translateY(0)'">
+       onmouseout="this.style.background='#008CFF';this.style.transform='translateY(0)'"
+       onclick="handleVenmoClick(event)">
       Donate on Venmo
     </a>
   </div>
@@ -419,6 +421,19 @@
   }
 
   loadDonors();
+
+  function handleVenmoClick(e) {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      e.preventDefault();
+      // Try to open Venmo app; fall back to web after 1.5s if app not installed
+      window.location = 'venmo://paycharge?txn=pay&recipients=kyle-rumaker&note=Lighthouse%20to%20Liberty%20Row';
+      setTimeout(() => {
+        window.location = 'https://venmo.com/kyle-rumaker';
+      }, 1500);
+    }
+    // Desktop: default href opens web normally
+  }
 </script>
 </body>
 </html>
