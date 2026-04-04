@@ -281,16 +281,16 @@
     <div class="requirements">
       <div class="req-title">Eligibility Requirements</div>
       <ul class="req-list">
-        <li>Both rowers must be members of the <strong>South Jersey Chiefs Association</strong> or <strong>United States Lifeguard Association</strong></li>
         <li>Boat must be a qualified <strong>Van Duyne</strong> or <strong>Asay</strong> type lifeguard boat</li>
         <li>At least one rower in the boat must have completed a <strong>15+ mile row in a single sitting</strong> with two rowers</li>
         <li>Rowers must <strong>trailer their own boat</strong> to the meeting location and have a trailer driver to move it to the pickup location</li>
+        <li>No additional signs, flags, emblems, or stickers are permitted to be displayed on the boat without <strong>direct approval in writing from the event organizers</strong>. Boats with Beach Patrol affiliations do not need approval for the Township/City or boat name.</li>
       </ul>
     </div>
 
     <div class="race-day">
       <div class="race-day-title">Race Day Instructions</div>
-      <p><strong>Launch time:</strong> Before sunrise on September 5, 2026. Exact time will be communicated after registration.</p>
+      <p><strong>Launch time:</strong> Between Sunrise and 9 am on September 5, 2026. Exact time will be communicated after registration.</p>
       <p><strong>Meeting location:</strong> Sandy Hook Boat Ramp. You are responsible for trailering your boat there. Your trailer driver must be available to move the trailer to the Port Liberty Boat Ramp pickup point.</p>
       <p><strong>Finish:</strong> Liberty Island. After the finish we will exit at Port Liberty Boat Ramp (1.5 miles).</p>
       <p><strong>Safety:</strong> All participants must have appropriate safety gear. This is an open ocean row — conditions may be rough. Participation is at your own risk.</p>
@@ -354,6 +354,10 @@
       <hr class="section-sep">
       <div class="form-section-title">Boat &amp; Qualification</div>
       <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label" for="boatName">Name Displayed on Boat</label>
+          <input type="text" id="boatName" class="form-input" placeholder="If unknown, please contact the event organizers once known">
+        </div>
         <div class="form-group">
           <label class="form-label">Qualifying Association <span class="req">*</span></label>
           <div class="radio-group" style="margin-top:4px;">
@@ -487,9 +491,12 @@
     btn.disabled = true;
     btn.textContent = 'Registering…';
 
+    const boatName = document.getElementById('boatName').value.trim() || null;
+
     const { data: boat, error: boatErr } = await db.from('boats').insert({
       association,
       boat_type:             boatType,
+      boat_name:             boatName,
       has_15_mile_experience: has15Miles === 'yes',
       has_trailer:           hasTrailer === 'yes',
       has_trailer_driver:    hasTrailerDriver === 'yes',
