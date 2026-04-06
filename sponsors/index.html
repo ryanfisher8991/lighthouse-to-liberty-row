@@ -16,6 +16,7 @@
   <meta name="twitter:image" content="https://www.lighthouse2libertyrow.com/brand_assets/Logo/L2L_LOGO.PNG">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -488,12 +489,24 @@
       </div>
     </div>
 
-    <div class="stripe-notice">
-      <span>⚡</span>
-      <span><strong>Stripe payments coming soon.</strong> Submit your application now and we'll contact you to arrange payment within 48 hours.</span>
+    <!-- Step 1 submit -->
+    <div id="sp-step1-actions">
+      <button class="btn-submit" id="submitBtn" onclick="submitApplication()">Continue to Payment</button>
     </div>
 
-    <button class="btn-submit" id="submitBtn" onclick="submitApplication()">Submit Application</button>
+    <!-- Step 2: Payment -->
+    <div id="sp-payment-section" style="display:none;">
+      <div style="background:rgba(22,36,71,0.03);border:1px solid rgba(22,36,71,0.08);border-radius:4px;padding:14px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:0.85rem;color:#6b7280;">Sponsorship payment</span>
+        <span id="sp-payment-amount" style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--gold);">—</span>
+      </div>
+      <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;">Payment Details</div>
+      <div id="sp-payment-error" style="display:none;background:#fef2f2;border:1px solid #fca5a5;border-radius:4px;padding:12px 16px;font-size:0.875rem;color:#dc2626;margin-bottom:16px;"></div>
+      <div id="sp-payment-element" style="margin-bottom:20px;"></div>
+      <button class="btn-submit" id="sp-pay-btn" onclick="submitSponsorPayment()">Complete Sponsorship</button>
+      <button onclick="backToSpForm()" style="width:100%;margin-top:8px;background:none;border:1.5px solid #e2e8f0;border-radius:4px;padding:12px 20px;font-size:0.85rem;font-weight:600;color:#6b7280;cursor:pointer;transition:border-color 0.2s,color 0.2s;min-height:44px;">← Edit Application</button>
+      <p style="font-size:0.75rem;color:#9ca3af;text-align:center;margin-top:14px;">Secured by Stripe · SSL encrypted</p>
+    </div>
   </div>
 
   <!-- CURRENT SPONSORS -->
@@ -583,6 +596,13 @@
     return data.publicUrl;
   }
 
+  const STRIPE_PK = 'pk_live_51TJ1bqCEx9pMe0hSzmNtUBRlPDWzuytNGrtqHaitKE4EVMory6HJo77K7zLShbxNLGd0FMgORGYGetUZK1D1yIrF00Tj2TaqAq';
+  const stripeObj = Stripe(STRIPE_PK);
+  let spElements = null;
+  let spSponsorId = null;
+
+  const TIER_PRICES = { bronze: '$250', silver: '$500', gold: '$1,000' };
+
   async function submitApplication() {
     const tier         = document.getElementById('selectedTier').value;
     const bizName      = document.getElementById('bizName').value.trim();
@@ -605,9 +625,9 @@
 
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
-    btn.textContent = 'Submitting…';
+    btn.textContent = 'Saving…';
 
-    // Insert sponsor row first to get the ID for logo path
+    // Insert sponsor row
     const { data: sponsor, error: insertErr } = await db.from('sponsors').insert({
       business_name:  bizName,
       website_url:    bizUrl || null,
@@ -623,11 +643,13 @@
       console.error('submitApplication:', insertErr);
       alert('Something went wrong. Please try again.');
       btn.disabled = false;
-      btn.textContent = 'Submit Application';
+      btn.textContent = 'Continue to Payment';
       return;
     }
 
-    // Upload logo and update row with URL
+    spSponsorId = sponsor.id;
+
+    // Upload logo
     const logoUrl = await uploadLogo(logoFile, sponsor.id);
     if (logoUrl) {
       await db.from('sponsors').update({ logo_url: logoUrl }).eq('id', sponsor.id);
@@ -638,9 +660,82 @@
       sizes.map(size => ({ sponsor_id: sponsor.id, size }))
     );
 
-    document.getElementById('successBanner').classList.add('show');
-    btn.textContent = 'Application Submitted ✓';
-    closeForm();
+    // Create PaymentIntent and show payment step
+    try {
+      const res = await fetch('/api/create-sponsor-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier, sponsorId: sponsor.id, bizName, contactEmail })
+      });
+      const { clientSecret, error } = await res.json();
+      if (error || !clientSecret) throw new Error(error || 'Failed to create payment');
+
+      spElements = stripeObj.elements({ clientSecret, appearance: {
+        theme: 'stripe',
+        variables: {
+          colorPrimary: '#c9942f', colorBackground: '#ffffff',
+          colorText: '#162447', colorDanger: '#dc2626',
+          fontFamily: 'Inter, sans-serif', borderRadius: '4px', fontSizeBase: '15px'
+        }
+      }});
+      spElements.create('payment').mount('#sp-payment-element');
+
+      document.getElementById('sp-payment-amount').textContent = TIER_PRICES[tier];
+      document.getElementById('sp-step1-actions').style.display = 'none';
+      document.getElementById('sp-payment-section').style.display = 'block';
+      document.getElementById('sp-payment-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (err) {
+      console.error('createSponsorPayment:', err);
+      alert('Application saved but payment setup failed. We\'ll contact you to arrange payment.');
+      document.getElementById('successBanner').classList.add('show');
+      btn.textContent = 'Application Submitted ✓';
+      closeForm();
+    }
+  }
+
+  function backToSpForm() {
+    document.getElementById('sp-payment-section').style.display = 'none';
+    document.getElementById('sp-step1-actions').style.display = 'block';
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = false;
+    btn.textContent = 'Continue to Payment';
+    document.getElementById('sp-payment-element').innerHTML = '';
+    spElements = null;
+  }
+
+  async function submitSponsorPayment() {
+    if (!spElements) return;
+    const btn = document.getElementById('sp-pay-btn');
+    btn.disabled = true;
+    btn.textContent = 'Processing…';
+    const errEl = document.getElementById('sp-payment-error');
+    errEl.style.display = 'none';
+
+    const { error, paymentIntent } = await stripeObj.confirmPayment({
+      elements: spElements,
+      confirmParams: { return_url: 'https://www.lighthouse2libertyrow.com/sponsors' },
+      redirect: 'if_required'
+    });
+
+    if (error) {
+      errEl.textContent = error.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Complete Sponsorship';
+      return;
+    }
+
+    if (paymentIntent?.status === 'succeeded') {
+      // Mark sponsor as paid
+      await db.from('sponsors').update({ payment_status: 'paid' }).eq('id', spSponsorId);
+      document.getElementById('successBanner').textContent = '✓ Payment received! Your sponsorship is confirmed. We\'ll be in touch within 48 hours.';
+      document.getElementById('successBanner').classList.add('show');
+      document.getElementById('sp-payment-section').style.display = 'none';
+      document.getElementById('sp-step1-actions').style.display = 'none';
+      closeForm();
+      loadSponsors();
+    }
   }
 
   async function loadSponsors() {
