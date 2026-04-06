@@ -629,13 +629,14 @@
       <div class="data-table-wrap">
         <table class="data-table">
           <thead><tr>
-            <th>Date</th><th>Donor (Admin View)</th><th>Amount</th><th>Source</th><th>Show Anon</th><th>Actions</th>
+            <th>Date</th><th>Donor (Admin View)</th><th>Email</th><th>Amount</th><th>Source</th><th>Show Anon</th><th>Actions</th>
           </tr></thead>
           <tbody>
             ${data.map(d => `
               <tr>
                 <td style="white-space:nowrap;color:var(--gray)">${formatDate(d.created_at)}</td>
                 <td>${donorCell(d)}</td>
+                <td style="font-size:0.82rem">${d.donor_email ? `<a href="mailto:${d.donor_email}" style="color:var(--gold)">${d.donor_email}</a>` : '<span style="color:var(--gray)">—</span>'}</td>
                 <td><strong>${formatCurrency(d.amount)}</strong></td>
                 <td><span class="badge ${d.source}">${d.source}</span></td>
                 <td>
@@ -659,6 +660,10 @@
             <div class="record-card-row">
               <span class="record-card-label">Donor</span>
               <span class="record-card-val">${donorCell(d)}</span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Email</span>
+              <span class="record-card-val">${d.donor_email ? `<a href="mailto:${d.donor_email}" style="color:var(--gold)">${d.donor_email}</a>` : '<span style="color:var(--gray)">—</span>'}</span>
             </div>
             <div class="record-card-row">
               <span class="record-card-label">Amount</span>

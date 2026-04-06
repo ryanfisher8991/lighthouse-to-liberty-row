@@ -22,6 +22,7 @@ module.exports = async (req, res) => {
       description:   'Lighthouse to Liberty Row — Donation',
       metadata: {
         donor_name:   name     || 'Anonymous',
+        donor_email:  email    || '',
         is_anonymous: isAnon   ? 'true' : 'false',
         source:       'website'
       }

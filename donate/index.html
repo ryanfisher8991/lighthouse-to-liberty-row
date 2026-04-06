@@ -540,12 +540,14 @@
   // ── Record in Supabase ─────────────────────────────────────
   async function recordDonation(paymentIntent) {
     const name   = document.getElementById('donorName').value.trim();
+    const email  = document.getElementById('donorEmail').value.trim();
     const isAnon = document.getElementById('anonCheck').checked;
     const amount = getAmount();
 
     await db.from('donations').insert({
       amount,
       donor_name:     name || null,
+      donor_email:    email || null,
       is_anonymous:   isAnon,
       source:         DONATION_SOURCE.STRIPE,
       is_public:      true,
@@ -573,6 +575,7 @@
       await db.from('donations').insert({
         amount:         paymentIntent.amount / 100,
         donor_name:     paymentIntent.metadata?.donor_name || null,
+        donor_email:    paymentIntent.metadata?.donor_email || null,
         is_anonymous:   paymentIntent.metadata?.is_anonymous === 'true',
         source:         DONATION_SOURCE.STRIPE,
         is_public:      true,
