@@ -223,15 +223,45 @@
     }
 
     .btn-submit {
-      padding: 15px 40px; background: var(--gold); color: var(--navy-dark);
+      width: 100%; padding: 15px 24px; background: var(--gold); color: var(--navy-dark);
       font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em;
       text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer;
+      min-height: 52px;
       box-shadow: 0 4px 16px rgba(201,148,47,0.3);
       transition: background 0.2s, transform 0.15s;
     }
     .btn-submit:hover { background: var(--gold-light); transform: translateY(-1px); }
     .btn-submit:active { transform: translateY(0); }
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* PAYMENT STEP */
+    .sp-payment-summary {
+      background: rgba(22,36,71,0.03); border: 1px solid rgba(22,36,71,0.08);
+      border-radius: 4px; padding: 14px 16px; margin-bottom: 20px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .sp-payment-summary-label { font-size: 0.85rem; color: #6b7280; }
+    .sp-payment-summary-amount {
+      font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--gold);
+    }
+    .sp-payment-label {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 12px; display: block;
+    }
+    .sp-payment-error {
+      background: #fef2f2; border: 1px solid #fca5a5; border-radius: 4px;
+      padding: 12px 16px; font-size: 0.875rem; color: #dc2626; margin-bottom: 16px; display: none;
+    }
+    #sp-payment-element { margin-bottom: 20px; }
+    .btn-back-sp {
+      width: 100%; margin-top: 8px; background: none; border: 1.5px solid #e2e8f0;
+      border-radius: 4px; padding: 12px 20px; font-size: 0.85rem; font-weight: 600;
+      color: #6b7280; cursor: pointer; transition: border-color 0.2s, color 0.2s; min-height: 44px;
+    }
+    .btn-back-sp:hover { border-color: var(--navy); color: var(--navy); }
+    .sp-secure-note {
+      font-size: 0.75rem; color: #9ca3af; text-align: center; margin-top: 14px;
+    }
 
     .success-banner {
       display: none; background: #f0fdf4; border: 1px solid #86efac;
@@ -496,16 +526,16 @@
 
     <!-- Step 2: Payment -->
     <div id="sp-payment-section" style="display:none;">
-      <div style="background:rgba(22,36,71,0.03);border:1px solid rgba(22,36,71,0.08);border-radius:4px;padding:14px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:0.85rem;color:#6b7280;">Sponsorship payment</span>
-        <span id="sp-payment-amount" style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--gold);">—</span>
+      <div class="sp-payment-summary">
+        <span class="sp-payment-summary-label">Sponsorship payment</span>
+        <span class="sp-payment-summary-amount" id="sp-payment-amount">—</span>
       </div>
-      <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;">Payment Details</div>
-      <div id="sp-payment-error" style="display:none;background:#fef2f2;border:1px solid #fca5a5;border-radius:4px;padding:12px 16px;font-size:0.875rem;color:#dc2626;margin-bottom:16px;"></div>
-      <div id="sp-payment-element" style="margin-bottom:20px;"></div>
+      <span class="sp-payment-label">Payment Details</span>
+      <div class="sp-payment-error" id="sp-payment-error"></div>
+      <div id="sp-payment-element"></div>
       <button class="btn-submit" id="sp-pay-btn" onclick="submitSponsorPayment()">Complete Sponsorship</button>
-      <button onclick="backToSpForm()" style="width:100%;margin-top:8px;background:none;border:1.5px solid #e2e8f0;border-radius:4px;padding:12px 20px;font-size:0.85rem;font-weight:600;color:#6b7280;cursor:pointer;transition:border-color 0.2s,color 0.2s;min-height:44px;">← Edit Application</button>
-      <p style="font-size:0.75rem;color:#9ca3af;text-align:center;margin-top:14px;">Secured by Stripe · SSL encrypted</p>
+      <button class="btn-back-sp" onclick="backToSpForm()">← Edit Application</button>
+      <p class="sp-secure-note">Secured by Stripe · SSL encrypted</p>
     </div>
   </div>
 
@@ -711,6 +741,7 @@
     btn.textContent = 'Processing…';
     const errEl = document.getElementById('sp-payment-error');
     errEl.style.display = 'none';
+    errEl.textContent = '';
 
     const { error, paymentIntent } = await stripeObj.confirmPayment({
       elements: spElements,
