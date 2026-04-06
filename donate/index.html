@@ -16,6 +16,7 @@
   <meta name="twitter:image" content="https://www.lighthouse2libertyrow.com/brand_assets/Logo/L2L_LOGO.PNG">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -93,7 +94,7 @@
       background: white; color: var(--navy);
       font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700;
       cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s;
-      text-align: center;
+      text-align: center; min-height: 44px;
     }
     .amount-btn:hover { border-color: var(--gold); }
     .amount-btn.selected { border-color: var(--gold); background: rgba(201,148,47,0.07); color: var(--gold); }
@@ -133,18 +134,35 @@
       margin-bottom: 28px;
     }
     .anon-toggle:hover { border-color: var(--gold); }
-    .anon-toggle input { width: 16px; height: 16px; accent-color: var(--gold); }
+    .anon-toggle input { width: 16px; height: 16px; accent-color: var(--gold); flex-shrink: 0; }
     .anon-toggle-label { font-size: 0.9rem; color: var(--navy); }
     .anon-toggle-sub { font-size: 0.78rem; color: #6b7280; margin-top: 2px; }
 
-    .stripe-notice {
-      background: rgba(201,148,47,0.07); border: 1px solid rgba(201,148,47,0.25);
+    /* PAYMENT ELEMENT */
+    #payment-section { display: none; }
+    #payment-element { margin-bottom: 24px; }
+
+    .payment-summary {
+      background: rgba(22,36,71,0.03); border: 1px solid rgba(22,36,71,0.08);
       border-radius: 4px; padding: 14px 16px; margin-bottom: 20px;
-      font-size: 0.85rem; color: #92400e; display: flex; align-items: center; gap: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .payment-summary-label { font-size: 0.85rem; color: #6b7280; }
+    .payment-summary-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 700; color: var(--gold);
     }
 
+    .btn-back {
+      background: none; border: 1.5px solid #e2e8f0; border-radius: 4px;
+      padding: 12px 20px; font-size: 0.85rem; font-weight: 600; color: #6b7280;
+      cursor: pointer; transition: border-color 0.2s, color 0.2s;
+      margin-bottom: 12px; width: 100%;
+    }
+    .btn-back:hover { border-color: var(--navy); color: var(--navy); }
+
     .btn-donate-submit {
-      width: 100%; padding: 16px;
+      width: 100%; padding: 16px; min-height: 52px;
       background: var(--gold); color: var(--navy-dark);
       font-size: 0.9rem; font-weight: 700; letter-spacing: 0.08em;
       text-transform: uppercase; border: none; border-radius: 4px;
@@ -157,17 +175,26 @@
       box-shadow: 0 6px 24px rgba(201,148,47,0.45);
     }
     .btn-donate-submit:active { transform: translateY(0); }
-    .btn-donate-submit:disabled {
-      opacity: 0.6; cursor: not-allowed; transform: none;
+    .btn-donate-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .payment-error {
+      background: #fef2f2; border: 1px solid #fca5a5; border-radius: 4px;
+      padding: 12px 16px; font-size: 0.875rem; color: #dc2626;
+      margin-bottom: 16px; display: none;
     }
+    .payment-error.show { display: block; }
 
     /* SUCCESS STATE */
     .success-banner {
-      display: none; background: #f0fdf4; border: 1px solid #86efac;
-      border-radius: 4px; padding: 16px 20px; margin-bottom: 20px;
-      font-size: 0.9rem; color: #166534;
+      display: none; text-align: center; padding: 32px;
     }
     .success-banner.show { display: block; }
+    .success-banner h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem; font-weight: 700; color: var(--navy); margin-bottom: 12px;
+    }
+    .success-banner p { font-size: 0.9375rem; color: #4a5568; line-height: 1.65; }
+    .success-icon { font-size: 3rem; margin-bottom: 16px; }
 
     /* DIVIDER */
     .section-divider {
@@ -195,10 +222,7 @@
       font-family: 'Playfair Display', serif;
       font-size: 1.2rem; font-weight: 700; color: var(--gold);
     }
-    .donor-empty {
-      text-align: center; padding: 40px 20px;
-      color: #9ca3af; font-size: 0.9rem; font-style: italic;
-    }
+    .donor-empty { text-align: center; padding: 40px 20px; color: #9ca3af; font-size: 0.9rem; font-style: italic; }
     .donor-loading { text-align: center; padding: 32px; color: #9ca3af; }
 
     /* FOOTER */
@@ -274,71 +298,97 @@
 
   <div class="thank-you">
     <h2>Thank you for supporting Lighthouse to Liberty Row.</h2>
-    <p>Your generosity directly funds the American Shore &amp; Beach Preservation Association and the Upper Township Beach Patrol — two organizations protecting the Jersey Shore for everyone. Ryan and Kyle are rowing every mile because of donors like you.</p>
+    <p>Your generosity directly funds the American Shore &amp; Beach Preservation Association (ASBPA) and the Upper Township Beach Patrol — two organizations protecting the Jersey Shore for everyone. Ryan and Kyle are rowing every mile because of donors like you.</p>
   </div>
 
   <div class="donate-card">
+
+    <!-- SUCCESS -->
     <div class="success-banner" id="successBanner">
-      ✓ Thank you! Your donation has been recorded. We'll reach out with a confirmation shortly once Stripe payments are live.
+      <div class="success-icon">✓</div>
+      <h3>Thank you!</h3>
+      <p>Your donation has been received. You'll get a receipt by email shortly.<br>See you on the water.</p>
     </div>
 
-    <span class="form-section-label">Choose an Amount</span>
-    <div class="amount-grid">
-      <button class="amount-btn" data-amount="25" onclick="selectAmount(25)">$25</button>
-      <button class="amount-btn" data-amount="50" onclick="selectAmount(50)">$50</button>
-      <button class="amount-btn" data-amount="100" onclick="selectAmount(100)">$100</button>
-      <button class="amount-btn" data-amount="250" onclick="selectAmount(250)">$250</button>
-    </div>
-    <div class="custom-amount-wrap">
-      <span>$</span>
-      <input type="number" class="custom-input" id="customAmount" placeholder="Custom amount" min="1"
-        oninput="clearAmountBtns()" />
-    </div>
-
-    <span class="form-section-label">Your Information</span>
-    <div class="form-group">
-      <label class="form-label" for="donorName">Your Name</label>
-      <input type="text" id="donorName" class="form-input" placeholder="Ryan Fisher" autocomplete="name">
-    </div>
-    <div class="form-group">
-      <label class="form-label" for="donorEmail">Email Address</label>
-      <input type="email" id="donorEmail" class="form-input" placeholder="you@email.com" autocomplete="email">
-    </div>
-
-    <label class="anon-toggle" for="anonCheck">
-      <input type="checkbox" id="anonCheck">
-      <div>
-        <div class="anon-toggle-label">Donate anonymously</div>
-        <div class="anon-toggle-sub">Your donation will still be posted publicly but shown as "Anonymous"</div>
+    <!-- STEP 1: Amount + Info -->
+    <div id="step1">
+      <span class="form-section-label">Choose an Amount</span>
+      <div class="amount-grid">
+        <button class="amount-btn" data-amount="25"  onclick="selectAmount(25)">$25</button>
+        <button class="amount-btn" data-amount="50"  onclick="selectAmount(50)">$50</button>
+        <button class="amount-btn" data-amount="100" onclick="selectAmount(100)">$100</button>
+        <button class="amount-btn" data-amount="250" onclick="selectAmount(250)">$250</button>
       </div>
-    </label>
+      <div class="custom-amount-wrap">
+        <span>$</span>
+        <input type="number" class="custom-input" id="customAmount" placeholder="Custom amount" min="1"
+          oninput="clearAmountBtns()" />
+      </div>
 
-    <div class="stripe-notice">
-      <span>⚡</span>
-      <span><strong>Stripe payments coming soon.</strong> Submitting now records your pledge — we'll follow up with a payment link once Stripe is live.</span>
+      <span class="form-section-label">Your Information</span>
+      <div class="form-group">
+        <label class="form-label" for="donorName">Your Name</label>
+        <input type="text" id="donorName" class="form-input" placeholder="Ryan Fisher" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="donorEmail">Email Address <span style="color:#ef4444">*</span></label>
+        <input type="email" id="donorEmail" class="form-input" placeholder="you@email.com" autocomplete="email">
+      </div>
+
+      <label class="anon-toggle" for="anonCheck">
+        <input type="checkbox" id="anonCheck">
+        <div>
+          <div class="anon-toggle-label">Donate anonymously</div>
+          <div class="anon-toggle-sub">Your name will show as "Anonymous" on the donor list</div>
+        </div>
+      </label>
+
+      <button class="btn-donate-submit" onclick="continueToPayment()">
+        Continue to Payment
+      </button>
+
+      <div style="display:flex;align-items:center;gap:12px;margin-top:14px;">
+        <div style="flex:1;height:1px;background:#e2e8f0;"></div>
+        <span style="font-size:0.75rem;color:#9ca3af;letter-spacing:0.06em;text-transform:uppercase;">or donate via</span>
+        <div style="flex:1;height:1px;background:#e2e8f0;"></div>
+      </div>
+
+      <a href="https://venmo.com/kyle-rumaker" target="_blank" rel="noopener"
+         id="venmoBtn"
+         style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;padding:13px;
+                background:#008CFF;color:white;border-radius:4px;text-decoration:none;
+                font-size:0.85rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+                min-height:44px;transition:background 0.2s,transform 0.15s;"
+         onmouseover="this.style.background='#0077DD';this.style.transform='translateY(-1px)'"
+         onmouseout="this.style.background='#008CFF';this.style.transform='translateY(0)'"
+         onclick="handleVenmoClick(event)">
+        Donate on Venmo
+      </a>
     </div>
 
-    <button class="btn-donate-submit" id="submitBtn" onclick="submitDonation()">
-      Donate Now
-    </button>
+    <!-- STEP 2: Stripe Payment Element -->
+    <div id="payment-section">
+      <div class="payment-summary">
+        <span class="payment-summary-label">Donation amount</span>
+        <span class="payment-summary-amount" id="paymentSummaryAmount">—</span>
+      </div>
 
-    <div style="display:flex;align-items:center;gap:12px;margin-top:14px;">
-      <div style="flex:1;height:1px;background:#e2e8f0;"></div>
-      <span style="font-size:0.75rem;color:#9ca3af;letter-spacing:0.06em;text-transform:uppercase;">or donate via</span>
-      <div style="flex:1;height:1px;background:#e2e8f0;"></div>
+      <span class="form-section-label">Payment Details</span>
+      <div class="payment-error" id="paymentError"></div>
+      <div id="payment-element"></div>
+
+      <button class="btn-donate-submit" id="submitPaymentBtn" onclick="submitPayment()" style="margin-top:20px;">
+        Complete Donation
+      </button>
+      <button class="btn-back" onclick="backToStep1()" style="margin-top:8px;">
+        ← Change Amount or Info
+      </button>
+
+      <p style="font-size:0.75rem;color:#9ca3af;text-align:center;margin-top:14px;">
+        Secured by Stripe · SSL encrypted
+      </p>
     </div>
 
-    <a href="https://venmo.com/kyle-rumaker" target="_blank" rel="noopener"
-       id="venmoBtn"
-       style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;padding:13px;
-              background:#008CFF;color:white;border-radius:4px;text-decoration:none;
-              font-size:0.85rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
-              transition:background 0.2s,transform 0.15s;"
-       onmouseover="this.style.background='#0077DD';this.style.transform='translateY(-1px)'"
-       onmouseout="this.style.background='#008CFF';this.style.transform='translateY(0)'"
-       onclick="handleVenmoClick(event)">
-      Donate on Venmo
-    </a>
   </div>
 
   <div class="section-divider">
@@ -357,61 +407,186 @@
 
 <script src="../js/supabase-config.js"></script>
 <script>
-  function setSelectedAmount(amount) {
-    document.querySelectorAll('.amount-btn').forEach(b => {
-      b.classList.toggle('selected', Number(b.dataset.amount) === amount);
-    });
-    if (amount) document.getElementById('customAmount').value = '';
+  const STRIPE_PK = 'pk_live_51TJ1bqCEx9pMe0hSzmNtUBRlPDWzuytNGrtqHaitKE4EVMory6HJo77K7zLShbxNLGd0FMgORGYGetUZK1D1yIrF00Tj2TaqAq';
+  const stripe = Stripe(STRIPE_PK);
+  let elements = null;
+  let currentClientSecret = null;
+
+  // ── Amount picker ──────────────────────────────────────────
+  function selectAmount(amount) {
+    document.querySelectorAll('.amount-btn').forEach(b =>
+      b.classList.toggle('selected', Number(b.dataset.amount) === amount)
+    );
+    document.getElementById('customAmount').value = '';
+  }
+
+  function clearAmountBtns() {
+    document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('selected'));
   }
 
   function getAmount() {
-    const custom = parseFloat(document.getElementById('customAmount').value);
+    const custom   = parseFloat(document.getElementById('customAmount').value);
     const selected = document.querySelector('.amount-btn.selected');
     return selected ? Number(selected.dataset.amount) : (isNaN(custom) ? null : custom);
   }
 
-  function selectAmount(amount) { setSelectedAmount(amount); }
-  function clearAmountBtns()    { setSelectedAmount(null); }
-
-  async function submitDonation() {
+  // ── Step 1 → Step 2 ────────────────────────────────────────
+  async function continueToPayment() {
     const amount = getAmount();
-    if (!amount || amount <= 0) { alert('Please select or enter a donation amount.'); return; }
+    if (!amount || amount < 1) { alert('Please select or enter a donation amount.'); return; }
 
-    const name   = document.getElementById('donorName').value.trim();
-    const email  = document.getElementById('donorEmail').value.trim();
-    const isAnon = document.getElementById('anonCheck').checked;
-
+    const email = document.getElementById('donorEmail').value.trim();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      alert('Please enter a valid email address so we can follow up.'); return;
+      alert('Please enter a valid email address.'); return;
     }
 
-    const btn = document.getElementById('submitBtn');
+    const btn = document.querySelector('#step1 .btn-donate-submit');
     btn.disabled = true;
-    btn.textContent = 'Saving…';
+    btn.textContent = 'Loading…';
 
-    const { error } = await db.from('donations').insert({
-      amount,
-      donor_name: name || null,  // always store name for admin tracking; is_anonymous controls public display
-      is_anonymous: isAnon,
-      source: DONATION_SOURCE.STRIPE,
-      is_public: true,
-      added_by_admin: false,
-      notes: `Pledge — email: ${email}. Awaiting Stripe payment.`
+    try {
+      const res = await fetch('/api/create-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount,
+          name:   document.getElementById('donorName').value.trim(),
+          email,
+          isAnon: document.getElementById('anonCheck').checked
+        })
+      });
+
+      const { clientSecret, error } = await res.json();
+      if (error || !clientSecret) throw new Error(error || 'Failed to create payment');
+
+      currentClientSecret = clientSecret;
+
+      // Mount Payment Element
+      elements = stripe.elements({ clientSecret, appearance: {
+        theme: 'stripe',
+        variables: {
+          colorPrimary:       '#c9942f',
+          colorBackground:    '#ffffff',
+          colorText:          '#162447',
+          colorDanger:        '#dc2626',
+          fontFamily:         'Inter, sans-serif',
+          borderRadius:       '4px',
+          fontSizeBase:       '15px'
+        }
+      }});
+
+      const paymentEl = elements.create('payment');
+      paymentEl.mount('#payment-element');
+
+      document.getElementById('paymentSummaryAmount').textContent =
+        '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 0 });
+
+      document.getElementById('step1').style.display = 'none';
+      document.getElementById('payment-section').style.display = 'block';
+
+    } catch (err) {
+      console.error('continueToPayment:', err);
+      alert('Something went wrong setting up payment. Please try again.');
+      btn.disabled = false;
+      btn.textContent = 'Continue to Payment';
+    }
+  }
+
+  // ── Back to step 1 ─────────────────────────────────────────
+  function backToStep1() {
+    document.getElementById('payment-section').style.display = 'none';
+    document.getElementById('step1').style.display = 'block';
+    const btn = document.querySelector('#step1 .btn-donate-submit');
+    btn.disabled = false;
+    btn.textContent = 'Continue to Payment';
+    elements = null;
+    currentClientSecret = null;
+    document.getElementById('payment-element').innerHTML = '';
+  }
+
+  // ── Confirm payment ────────────────────────────────────────
+  async function submitPayment() {
+    if (!elements || !currentClientSecret) return;
+
+    const btn = document.getElementById('submitPaymentBtn');
+    btn.disabled = true;
+    btn.textContent = 'Processing…';
+
+    const errEl = document.getElementById('paymentError');
+    errEl.classList.remove('show');
+
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: 'https://www.lighthouse2libertyrow.com/donate',
+      },
+      redirect: 'if_required'
     });
 
     if (error) {
-      console.error('submitDonation:', error);
-      alert('Something went wrong. Please try again or contact us directly.');
+      errEl.textContent = error.message;
+      errEl.classList.add('show');
       btn.disabled = false;
-      btn.textContent = 'Donate Now';
+      btn.textContent = 'Complete Donation';
       return;
     }
 
+    if (paymentIntent && paymentIntent.status === 'succeeded') {
+      await recordDonation(paymentIntent);
+      showSuccess();
+    }
+  }
+
+  // ── Record in Supabase ─────────────────────────────────────
+  async function recordDonation(paymentIntent) {
+    const name   = document.getElementById('donorName').value.trim();
+    const isAnon = document.getElementById('anonCheck').checked;
+    const amount = getAmount();
+
+    await db.from('donations').insert({
+      amount,
+      donor_name:     name || null,
+      is_anonymous:   isAnon,
+      source:         DONATION_SOURCE.STRIPE,
+      is_public:      true,
+      added_by_admin: false,
+      notes:          `stripe_pi:${paymentIntent.id}`
+    });
+  }
+
+  function showSuccess() {
+    document.getElementById('payment-section').style.display = 'none';
+    document.getElementById('step1').style.display = 'none';
     document.getElementById('successBanner').classList.add('show');
-    btn.textContent = 'Donation Recorded ✓';
     loadDonors();
   }
 
+  // ── Handle 3DS redirect return ─────────────────────────────
+  async function checkReturnFromStripe() {
+    const params = new URLSearchParams(window.location.search);
+    const clientSecret = params.get('payment_intent_client_secret');
+    if (!clientSecret) return;
+
+    const { paymentIntent } = await stripe.retrievePaymentIntent(clientSecret);
+    if (paymentIntent?.status === 'succeeded') {
+      // Record with best-effort data (name/anon not recoverable after redirect)
+      await db.from('donations').insert({
+        amount:         paymentIntent.amount / 100,
+        donor_name:     paymentIntent.metadata?.donor_name || null,
+        is_anonymous:   paymentIntent.metadata?.is_anonymous === 'true',
+        source:         DONATION_SOURCE.STRIPE,
+        is_public:      true,
+        added_by_admin: false,
+        notes:          `stripe_pi:${paymentIntent.id}`
+      });
+      showSuccess();
+    }
+
+    // Clean URL
+    window.history.replaceState({}, '', '/donate');
+  }
+
+  // ── Donor list ─────────────────────────────────────────────
   async function loadDonors() {
     const list = document.getElementById('donorList');
     const donations = await getPublicDonations();
@@ -430,20 +605,19 @@
     `).join('');
   }
 
-  loadDonors();
-
+  // ── Venmo deep link ────────────────────────────────────────
   function handleVenmoClick(e) {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (isMobile) {
       e.preventDefault();
-      // Try to open Venmo app; fall back to web after 1.5s if app not installed
       window.location = 'venmo://paycharge?txn=pay&recipients=kyle-rumaker&note=Lighthouse%20to%20Liberty%20Row';
-      setTimeout(() => {
-        window.location = 'https://venmo.com/kyle-rumaker';
-      }, 1500);
+      setTimeout(() => { window.location = 'https://venmo.com/kyle-rumaker'; }, 1500);
     }
-    // Desktop: default href opens web normally
   }
+
+  // ── Init ───────────────────────────────────────────────────
+  checkReturnFromStripe();
+  loadDonors();
 </script>
 </body>
 </html>
