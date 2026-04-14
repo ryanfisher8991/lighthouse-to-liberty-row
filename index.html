@@ -1124,6 +1124,21 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="js/supabase-config.js" defer></script>
 <script defer>
+(async () => {
+  const el = document.getElementById('landingSponsorsDisplay');
+  if (!el) return;
+  try {
+    const sponsors = await getApprovedSponsors();
+    el.innerHTML = sponsors.length
+      ? renderSponsorTiles(sponsors)
+      : '<p class="sponsor-tiles-empty">No sponsors yet — <a href="/sponsors" style="color:var(--gold)">be the first!</a></p>';
+  } catch(e) {
+    console.error('sponsor tiles:', e);
+    el.innerHTML = '<p class="sponsor-tiles-empty">No sponsors yet — <a href="/sponsors" style="color:var(--gold)">be the first!</a></p>';
+  }
+})();
+</script>
+<script defer>
 try {
   // Nav scroll
   const nav = document.getElementById('mainNav');
@@ -1207,18 +1222,6 @@ try {
     }
   }
 } catch(e) { console.error('Page script error:', e); }
-
-// Load sponsor tiles (must wait for deferred supabase-config.js)
-document.addEventListener('DOMContentLoaded', async () => {
-  const el = document.getElementById('landingSponsorsDisplay');
-  if (!el) return;
-  const sponsors = await getApprovedSponsors();
-  if (!sponsors.length) {
-    el.innerHTML = '<p class="sponsor-tiles-empty">No sponsors yet — <a href="/sponsors" style="color:var(--gold)">be the first!</a></p>';
-    return;
-  }
-  el.innerHTML = renderSponsorTiles(sponsors);
-});
 </script>
 <script>
 if ('serviceWorker' in navigator) {
