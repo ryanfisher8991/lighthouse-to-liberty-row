@@ -49,12 +49,11 @@
 
     /* ── HERO LOGO ── */
     .hero-logo {
-      display: block; height: 72px; width: auto; margin: 0 auto 20px;
-      filter: brightness(0) invert(1);
-      opacity: 0.92;
+      display: block; height: 80px; width: auto; margin: 0 auto 20px;
+      filter: drop-shadow(0 2px 12px rgba(0,0,0,0.5));
     }
 
-    @media (max-width: 600px) { .hero-logo { height: 52px; } }
+    @media (max-width: 600px) { .hero-logo { height: 60px; } }
 
     /* ── PROCEEDS CALLOUT ── */
     .proceeds-callout {
@@ -194,6 +193,11 @@
       color: white; font-size: 0.85rem; font-weight: 600;
       padding: 8px 18px; border-radius: 100px;
       backdrop-filter: blur(4px);
+      text-decoration: none;
+    }
+    .hero-pill-link:hover {
+      background: rgba(255,255,255,0.25);
+      border-color: rgba(255,255,255,0.45);
     }
 
     /* ── PERKS STRIP ── */
@@ -569,7 +573,7 @@
   </p>
   <div class="hero-details">
     <span class="hero-pill">🗓 May 30, 2026 · 1 PM</span>
-    <span class="hero-pill">📍 321 Marshallville Rd, Woodbine, NJ</span>
+    <a href="https://maps.apple.com/?address=321+Marshallville+Road,+Woodbine,+NJ+08270" target="_blank" class="hero-pill hero-pill-link">📍 321 Marshallville Rd, Woodbine, NJ</a>
     <span class="hero-pill">🎟 $50 per person</span>
     <span class="hero-pill">🦞 Food &amp; Kegs Included</span>
   </div>
