@@ -308,6 +308,126 @@
       .form-group.full { grid-column: span 1; }
       .form-panel { padding: 24px 20px; }
     }
+
+    /* ===== THANK YOU MODAL ===== */
+    #thankYouModal {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(12, 21, 35, 0.88);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      backdrop-filter: blur(6px);
+      animation: tyOverlayIn 0.35s ease both;
+    }
+    @keyframes tyOverlayIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .ty-card {
+      background: #faf8f2;
+      border-radius: 12px;
+      width: 100%; max-width: 500px;
+      overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(201,148,47,0.25);
+      animation: tyCardIn 0.45s cubic-bezier(0.34, 1.4, 0.64, 1) 0.05s both;
+    }
+    @keyframes tyCardIn {
+      from { opacity: 0; transform: scale(0.86) translateY(20px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .ty-header {
+      background: var(--navy-dark);
+      padding: 32px 40px 24px;
+      text-align: center;
+    }
+    .ty-logo { height: 52px; }
+    .ty-rule {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin-top: 22px;
+    }
+    .ty-body {
+      padding: 36px 40px 42px;
+      text-align: center;
+    }
+    .ty-icon {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 8px 24px rgba(201,148,47,0.35);
+      animation: tyIconIn 0.5s cubic-bezier(0.34, 1.6, 0.64, 1) 0.2s both;
+    }
+    @keyframes tyIconIn {
+      from { opacity: 0; transform: scale(0) rotate(-30deg); }
+      to   { opacity: 1; transform: scale(1) rotate(0); }
+    }
+    .ty-icon svg { width: 26px; height: 26px; }
+    .ty-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.25rem; font-weight: 900;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 6px;
+      animation: tyFadeUp 0.4s ease 0.25s both;
+    }
+    .ty-biz {
+      font-size: 1rem; font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 14px;
+      animation: tyFadeUp 0.4s ease 0.3s both;
+    }
+    .ty-tier-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 16px;
+      border-radius: 100px;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 24px;
+      animation: tyFadeUp 0.4s ease 0.35s both;
+    }
+    .ty-tier-pill.gold   { background: #fef3c7; color: #92400e; border: 1px solid #d4a44c; }
+    .ty-tier-pill.silver { background: #f1f5f9; color: #475569; border: 1px solid #94a3b8; }
+    .ty-tier-pill.bronze { background: #fff7ed; color: #9a3412; border: 1px solid #c2673a; }
+    .ty-divider {
+      width: 40px; height: 1px;
+      background: var(--gold);
+      margin: 0 auto 20px;
+      animation: tyFadeUp 0.4s ease 0.35s both;
+    }
+    .ty-message {
+      font-size: 0.9375rem; line-height: 1.75;
+      color: var(--navy);
+      margin-bottom: 10px;
+      animation: tyFadeUp 0.4s ease 0.4s both;
+    }
+    .ty-sub {
+      font-size: 0.8125rem; line-height: 1.65;
+      color: var(--silver, #6b7280);
+      margin-bottom: 32px;
+      animation: tyFadeUp 0.4s ease 0.45s both;
+    }
+    @keyframes tyFadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .ty-done-btn {
+      background: var(--navy); color: white;
+      padding: 14px 52px;
+      border: none; border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      animation: tyFadeUp 0.4s ease 0.5s both;
+    }
+    .ty-done-btn:hover  { background: var(--navy-mid, #1e3564); }
+    .ty-done-btn:active { transform: scale(0.97); }
+    @media (max-width: 480px) {
+      .ty-body { padding: 28px 24px 36px; }
+      .ty-header { padding: 28px 24px 20px; }
+      .ty-heading { font-size: 1.875rem; }
+    }
   </style>
 </head>
 <body>
@@ -767,12 +887,11 @@
     if (paymentIntent?.status === 'succeeded') {
       // Mark sponsor as paid
       await db.from('sponsors').update({ payment_status: 'paid' }).eq('id', spSponsorId);
-      document.getElementById('successBanner').textContent = '✓ Payment received! Your sponsorship is confirmed. We\'ll be in touch within 48 hours.';
-      document.getElementById('successBanner').classList.add('show');
       document.getElementById('sp-payment-section').style.display = 'none';
       document.getElementById('sp-step1-actions').style.display = 'none';
       closeForm();
       loadSponsors();
+      showThankYouModal(bizName, tier);
     }
   }
 
@@ -807,6 +926,54 @@
   }
 
   loadSponsors();
+
+  function showThankYouModal(bizName, tier) {
+    document.getElementById('tyBizName').textContent = bizName;
+    const pill = document.getElementById('tyTierPill');
+    const labels = { gold: 'Gold Sponsor', silver: 'Silver Sponsor', bronze: 'Bronze Sponsor' };
+    pill.textContent = labels[tier] || tier;
+    pill.className = 'ty-tier-pill ' + tier;
+    const modal = document.getElementById('thankYouModal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeThankYouModal() {
+    const modal = document.getElementById('thankYouModal');
+    modal.style.transition = 'opacity 0.25s ease';
+    modal.style.opacity = '0';
+    setTimeout(() => {
+      modal.style.display = 'none';
+      modal.style.opacity = '';
+      modal.style.transition = '';
+      document.body.style.overflow = '';
+    }, 250);
+  }
 </script>
+
+<!-- THANK YOU MODAL -->
+<div id="thankYouModal" style="display:none;" onclick="if(event.target===this)closeThankYouModal()">
+  <div class="ty-card">
+    <div class="ty-header">
+      <img src="../brand_assets/Logo/L2L_LOGO2.png" alt="Lighthouse to Liberty Row" class="ty-logo">
+      <div class="ty-rule"></div>
+    </div>
+    <div class="ty-body">
+      <div class="ty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <h2 class="ty-heading">Thank You!</h2>
+      <p class="ty-biz" id="tyBizName"></p>
+      <div class="ty-tier-pill" id="tyTierPill"></div>
+      <div class="ty-divider"></div>
+      <p class="ty-message">Your sponsorship is confirmed and your payment has been received. You're officially part of the Lighthouse to Liberty Row journey.</p>
+      <p class="ty-sub">Our team will be in touch within 48 hours with next steps, logo placement details, and event information.</p>
+      <button class="ty-done-btn" onclick="closeThankYouModal()">Done</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
