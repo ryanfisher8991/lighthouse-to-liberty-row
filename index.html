@@ -1123,21 +1123,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <script src="js/supabase-config.js" defer></script>
-<script defer>
-(async () => {
-  const el = document.getElementById('landingSponsorsDisplay');
-  if (!el) return;
-  try {
-    const sponsors = await getApprovedSponsors();
-    el.innerHTML = sponsors.length
-      ? renderSponsorTiles(sponsors)
-      : '<p class="sponsor-tiles-empty">No sponsors yet — <a href="/sponsors" style="color:var(--gold)">be the first!</a></p>';
-  } catch(e) {
-    console.error('sponsor tiles:', e);
-    el.innerHTML = '<p class="sponsor-tiles-empty">No sponsors yet — <a href="/sponsors" style="color:var(--gold)">be the first!</a></p>';
-  }
-})();
-</script>
+<script src="js/landing-sponsors.js" defer></script>
 <script defer>
 try {
   // Nav scroll
