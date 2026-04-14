@@ -47,6 +47,22 @@
       overflow-x: hidden;
     }
 
+    /* ── TOP NAV ── */
+    .cf-nav {
+      background: var(--red-dark); padding: 12px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .cf-home-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: rgba(255,255,255,0.75);
+      text-decoration: none; padding: 8px 14px;
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+      min-height: 44px;
+    }
+    .cf-home-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
     /* ── HERO LOGO ── */
     .hero-logo {
       display: block; height: 80px; width: auto; margin: 0 auto 20px;
@@ -560,6 +576,11 @@
   </style>
 </head>
 <body>
+
+<!-- TOP NAV -->
+<nav class="cf-nav">
+  <a href="/" class="cf-home-btn">← Home</a>
+</nav>
 
 <!-- HERO -->
 <section class="hero">
