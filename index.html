@@ -1208,8 +1208,8 @@ try {
   }
 } catch(e) { console.error('Page script error:', e); }
 
-// Load sponsor tiles
-(async () => {
+// Load sponsor tiles (must wait for deferred supabase-config.js)
+document.addEventListener('DOMContentLoaded', async () => {
   const el = document.getElementById('landingSponsorsDisplay');
   if (!el) return;
   const sponsors = await getApprovedSponsors();
@@ -1218,7 +1218,7 @@ try {
     return;
   }
   el.innerHTML = renderSponsorTiles(sponsors);
-})();
+});
 </script>
 <script>
 if ('serviceWorker' in navigator) {
