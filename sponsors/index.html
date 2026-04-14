@@ -657,48 +657,47 @@
     btn.disabled = true;
     btn.textContent = 'Saving…';
 
-    // Insert sponsor row
-    const { data: sponsor, error: insertErr } = await db.from('sponsors').insert({
-      business_name:  bizName,
-      website_url:    bizUrl || null,
-      tier,
-      contact_name:   contactName,
-      contact_title:  contactTitle || null,
-      contact_email:  contactEmail,
-      payment_status: 'pending',
-      approved:       false
-    }).select('id').single();
-
-    if (insertErr) {
-      console.error('submitApplication:', insertErr);
-      alert('Something went wrong. Please try again.');
-      btn.disabled = false;
-      btn.textContent = 'Continue to Payment';
-      return;
-    }
-
-    spSponsorId = sponsor.id;
-
-    // Upload logo
-    const logoUrl = await uploadLogo(logoFile, sponsor.id);
-    if (logoUrl) {
-      await db.from('sponsors').update({ logo_url: logoUrl }).eq('id', sponsor.id);
-    }
-
-    // Insert shirt orders
-    await db.from('sponsor_shirt_orders').insert(
-      sizes.map(size => ({ sponsor_id: sponsor.id, size }))
-    );
-
-    // Create PaymentIntent and show payment step
     try {
+      // Generate ID client-side so we don't need a SELECT RLS policy after insert
+      const sponsorId = crypto.randomUUID();
+
+      // Insert sponsor row
+      const { error: insertErr } = await db.from('sponsors').insert({
+        id:             sponsorId,
+        business_name:  bizName,
+        website_url:    bizUrl || null,
+        tier,
+        contact_name:   contactName,
+        contact_title:  contactTitle || null,
+        contact_email:  contactEmail,
+        payment_status: 'pending',
+        approved:       false
+      });
+
+      if (insertErr) throw Object.assign(new Error(insertErr.message), { _stage: 'insert' });
+
+      spSponsorId = sponsorId;
+
+      // Upload logo (non-blocking — failure doesn't stop payment)
+      const logoUrl = await uploadLogo(logoFile, sponsorId);
+      if (logoUrl) {
+        await db.from('sponsors').update({ logo_url: logoUrl }).eq('id', sponsorId);
+      }
+
+      // Insert shirt orders (non-blocking)
+      const { error: shirtErr } = await db.from('sponsor_shirt_orders').insert(
+        sizes.map(size => ({ sponsor_id: sponsorId, size }))
+      );
+      if (shirtErr) console.error('shirt orders:', shirtErr);
+
+      // Create PaymentIntent and show payment step
       const res = await fetch('/api/create-sponsor-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tier, sponsorId: sponsor.id, bizName, contactEmail })
       });
-      const { clientSecret, error } = await res.json();
-      if (error || !clientSecret) throw new Error(error || 'Failed to create payment');
+      const { clientSecret, error: payErr } = await res.json();
+      if (payErr || !clientSecret) throw new Error(payErr || 'Failed to create payment');
 
       spElements = stripeObj.elements({ clientSecret, appearance: {
         theme: 'stripe',
@@ -716,11 +715,19 @@
       document.getElementById('sp-payment-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     } catch (err) {
-      console.error('createSponsorPayment:', err);
-      alert('Application saved but payment setup failed. We\'ll contact you to arrange payment.');
-      document.getElementById('successBanner').classList.add('show');
-      btn.textContent = 'Application Submitted ✓';
-      closeForm();
+      console.error('submitApplication error:', err);
+      if (spSponsorId) {
+        // Insert succeeded but something after (logo, shirts, or payment API) failed
+        alert('Application saved but payment setup failed. We\'ll contact you to arrange payment.');
+        document.getElementById('successBanner').classList.add('show');
+        btn.textContent = 'Application Submitted ✓';
+        closeForm();
+      } else {
+        // Insert itself failed
+        alert('Something went wrong. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Continue to Payment';
+      }
     }
   }
 
