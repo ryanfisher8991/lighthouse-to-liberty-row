@@ -303,6 +303,9 @@
     <button class="sidebar-item" data-panel="boats" onclick="showPanel('boats', this)">
       <span class="icon">🚣</span> Boat Signups
     </button>
+    <button class="sidebar-item" data-panel="crawfish" onclick="showPanel('crawfish', this)">
+      <span class="icon">🦞</span> Crawfish Boil
+    </button>
 
     <span class="sidebar-label">Config</span>
     <button class="sidebar-item" data-panel="settings" onclick="showPanel('settings', this)">
@@ -334,6 +337,9 @@
       </button>
       <button class="mobile-tab" onclick="showPanel('boats', this)" data-panel="boats">
         <span class="tab-icon">🚣</span>Boats
+      </button>
+      <button class="mobile-tab" onclick="showPanel('crawfish', this)" data-panel="crawfish">
+        <span class="tab-icon">🦞</span>Boil
       </button>
       <button class="mobile-tab" onclick="showPanel('settings', this)" data-panel="settings">
         <span class="tab-icon">⚙️</span>Settings
@@ -481,6 +487,36 @@
       </div>
     </div>
 
+    <!-- CRAWFISH BOIL -->
+    <div class="panel" id="panel-crawfish">
+      <div class="admin-header">
+        <h1>Crawfish Boil Tickets</h1>
+        <p>Review ticket purchases and confirm Venmo payments.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:20px;">
+        <div class="card" style="padding:20px 24px;">
+          <div class="card-title">Total Tickets</div>
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--navy)" id="cf-total-tickets">—</div>
+        </div>
+        <div class="card" style="padding:20px 24px;">
+          <div class="card-title">Confirmed</div>
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--green)" id="cf-paid-tickets">—</div>
+        </div>
+        <div class="card" style="padding:20px 24px;">
+          <div class="card-title">Pending Venmo</div>
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:#92400e" id="cf-pending-tickets">—</div>
+        </div>
+        <div class="card" style="padding:20px 24px;">
+          <div class="card-title">Revenue</div>
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--navy)" id="cf-revenue">—</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">All Ticket Orders</div>
+        <div id="crawfish-table"><div class="empty-state">Loading…</div></div>
+      </div>
+    </div>
+
     <!-- SETTINGS -->
     <div class="panel" id="panel-settings">
       <div class="admin-header">
@@ -583,7 +619,7 @@
     // sync the other nav (sidebar ↔ mobile tabs)
     document.querySelectorAll('.mobile-tab[data-panel="' + name + '"],.sidebar-item[data-panel="' + name + '"]')
       .forEach(b => b.classList.add('active'));
-    const loaders = { donations: loadDonations, sponsors: loadSponsors, boats: loadBoats };
+    const loaders = { donations: loadDonations, sponsors: loadSponsors, boats: loadBoats, crawfish: loadCrawfish };
     if (loaders[name]) loaders[name]();
   }
 
@@ -838,6 +874,104 @@
     const { error } = await db.from('sponsors').delete().eq('id', id);
     if (error) { console.error('deleteSponsor:', error); alert('Failed.'); return; }
     loadSponsors();
+  }
+
+  // ===== CRAWFISH BOIL =====
+  async function loadCrawfish() {
+    const el = document.getElementById('crawfish-table');
+    const { data, error } = await db.from('crawfish_tickets')
+      .select('*').order('created_at', { ascending: false }).limit(300);
+
+    if (error) { el.innerHTML = '<div class="empty-state">Error loading tickets.</div>'; console.error(error); return; }
+    if (!data?.length) { el.innerHTML = '<div class="empty-state">No ticket orders yet.</div>'; return; }
+
+    const totalQty   = data.reduce((s, t) => s + (t.quantity || 0), 0);
+    const paidQty    = data.filter(t => t.payment_status === 'paid').reduce((s, t) => s + (t.quantity || 0), 0);
+    const pendingQty = data.filter(t => t.payment_status === 'pending').reduce((s, t) => s + (t.quantity || 0), 0);
+    const revenue    = data.filter(t => t.payment_status === 'paid').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+
+    document.getElementById('cf-total-tickets').textContent   = totalQty;
+    document.getElementById('cf-paid-tickets').textContent    = paidQty;
+    document.getElementById('cf-pending-tickets').textContent = pendingQty;
+    document.getElementById('cf-revenue').textContent         = formatCurrency(revenue);
+
+    const methodBadge = m => m === 'venmo'
+      ? '<span class="badge" style="background:#3D95CE22;color:#3D95CE">Venmo</span>'
+      : '<span class="badge" style="background:#635BFF22;color:#635BFF">Stripe</span>';
+
+    el.innerHTML = `
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>Date</th><th>Name</th><th>Email</th><th>Qty</th><th>Amount</th><th>Method</th><th>Status</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            ${data.map(t => `
+              <tr>
+                <td style="white-space:nowrap;color:var(--gray)">${formatDate(t.created_at)}</td>
+                <td><strong>${t.name || '—'}</strong></td>
+                <td style="font-size:0.82rem">${t.email ? `<a href="mailto:${t.email}" style="color:var(--gold)">${t.email}</a>` : '—'}</td>
+                <td><strong>${t.quantity}</strong></td>
+                <td><strong>${formatCurrency(Number(t.amount))}</strong></td>
+                <td>${methodBadge(t.payment_method)}</td>
+                <td><span class="badge ${t.payment_status}">${t.payment_status}</span></td>
+                <td>
+                  ${t.payment_status === 'pending' ? `<button class="action-btn approve" onclick="confirmCrawfishPayment('${t.id}')">Confirm</button>` : ''}
+                  <button class="action-btn delete" onclick="deleteCrawfishTicket('${t.id}')">Delete</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="record-cards">
+        ${data.map(t => `
+          <div class="record-card">
+            <div class="record-card-row">
+              <span class="record-card-label">Name</span>
+              <span class="record-card-val"><strong>${t.name || '—'}</strong></span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Email</span>
+              <span class="record-card-val">${t.email ? `<a href="mailto:${t.email}" style="color:var(--gold)">${t.email}</a>` : '—'}</span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Tickets</span>
+              <span class="record-card-val"><strong>${t.quantity} × $50 = ${formatCurrency(Number(t.amount))}</strong></span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Method</span>
+              <span class="record-card-val">${methodBadge(t.payment_method)}</span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Status</span>
+              <span class="record-card-val"><span class="badge ${t.payment_status}">${t.payment_status}</span></span>
+            </div>
+            <div class="record-card-row">
+              <span class="record-card-label">Date</span>
+              <span class="record-card-val" style="color:var(--gray)">${formatDate(t.created_at)}</span>
+            </div>
+            <div class="record-card-actions">
+              ${t.payment_status === 'pending' ? `<button class="action-btn approve" onclick="confirmCrawfishPayment('${t.id}')">Confirm Venmo</button>` : ''}
+              <button class="action-btn delete" onclick="deleteCrawfishTicket('${t.id}')">Delete</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
+  }
+
+  async function confirmCrawfishPayment(id) {
+    if (!confirm('Mark this Venmo payment as confirmed?')) return;
+    const { error } = await db.from('crawfish_tickets').update({ payment_status: 'paid' }).eq('id', id);
+    if (error) { console.error('confirmCrawfishPayment:', error); alert('Failed to confirm.'); return; }
+    loadCrawfish();
+  }
+
+  async function deleteCrawfishTicket(id) {
+    if (!confirm('Delete this ticket order? This cannot be undone.')) return;
+    const { error } = await db.from('crawfish_tickets').delete().eq('id', id);
+    if (error) { console.error('deleteCrawfishTicket:', error); alert('Failed to delete.'); return; }
+    loadCrawfish();
   }
 
   // ===== BOATS =====

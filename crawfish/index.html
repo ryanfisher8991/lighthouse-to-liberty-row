@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crawfish Boil Fundraiser — Lighthouse to Liberty Row</title>
+  <meta name="robots" content="noindex, nofollow">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red:       #b91c1c;
+      --red-dark:  #7f1d1d;
+      --red-light: #ef4444;
+      --orange:    #ea580c;
+      --gold:      #d97706;
+      --cream:     #fff8f0;
+      --cream-dark:#fef3e2;
+      --dark:      #1c0a00;
+      --dark-mid:  #3b1a0a;
+      --green:     #16a34a;
+      --navy:      #162447;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--red-dark);
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(234,88,12,0.35) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(185,28,28,0.5) 0%, transparent 55%),
+        radial-gradient(ellipse at 60% 90%, rgba(217,119,6,0.25) 0%, transparent 50%);
+      padding: 60px 24px 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.85);
+      font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      padding: 6px 16px; border-radius: 100px;
+      margin-bottom: 24px;
+    }
+
+    .hero-emoji {
+      font-size: clamp(3rem, 10vw, 5rem);
+      display: block;
+      margin-bottom: 16px;
+      animation: bob 3s ease-in-out infinite;
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50%       { transform: translateY(-10px) rotate(3deg); }
+    }
+
+    .hero-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2.8rem, 9vw, 6rem);
+      color: white;
+      line-height: 1;
+      margin-bottom: 12px;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.3);
+      letter-spacing: 0.01em;
+    }
+
+    .hero-title span { color: #fbbf24; }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 3vw, 1.25rem);
+      color: rgba(255,255,255,0.75);
+      max-width: 520px; margin: 0 auto 32px;
+      line-height: 1.6;
+    }
+
+    .hero-details {
+      display: inline-flex; flex-wrap: wrap; justify-content: center;
+      gap: 8px; margin-bottom: 0;
+    }
+
+    .hero-pill {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white; font-size: 0.85rem; font-weight: 600;
+      padding: 8px 18px; border-radius: 100px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── PERKS STRIP ── */
+    .perks {
+      background: var(--orange);
+      display: flex; flex-wrap: wrap;
+      justify-content: center; gap: 0;
+      overflow: hidden;
+    }
+
+    .perk {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 28px;
+      font-size: 0.85rem; font-weight: 700;
+      color: white; letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-right: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .perk:last-child { border-right: none; }
+    .perk-icon { font-size: 1.2rem; }
+
+    /* ── MAIN ── */
+    .main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+
+    /* ── TICKET CARD ── */
+    .ticket-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(28,10,0,0.06),
+        0 8px 32px rgba(28,10,0,0.1),
+        0 2px 8px rgba(28,10,0,0.06);
+      margin-bottom: 32px;
+    }
+
+    .ticket-card-header {
+      background: var(--red);
+      background-image: linear-gradient(135deg, var(--red-dark) 0%, var(--red) 100%);
+      padding: 28px 32px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .ticket-card-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.5rem; color: white; letter-spacing: 0.02em;
+    }
+
+    .ticket-price-badge {
+      background: rgba(255,255,255,0.15);
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 8px; padding: 6px 14px;
+      text-align: center;
+    }
+
+    .ticket-price-badge .price {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.6rem; color: #fbbf24; line-height: 1;
+    }
+
+    .ticket-price-badge .per {
+      font-size: 0.7rem; color: rgba(255,255,255,0.7);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+
+    .ticket-card-body { padding: 32px; }
+
+    /* ── QUANTITY ── */
+    .qty-label {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--red); margin-bottom: 12px; display: block;
+    }
+
+    .qty-row {
+      display: flex; align-items: center; gap: 0;
+      background: var(--cream); border: 2px solid #e5e7eb;
+      border-radius: 10px; overflow: hidden;
+      margin-bottom: 24px; max-width: 220px;
+    }
+
+    .qty-btn {
+      width: 52px; height: 52px; background: white; border: none;
+      font-size: 1.4rem; font-weight: 700; color: var(--red);
+      cursor: pointer; transition: background 0.15s, color 0.15s;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .qty-btn:hover { background: var(--cream-dark); }
+    .qty-btn:active { background: #fde8e8; }
+
+    .qty-display {
+      flex: 1; text-align: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.8rem; color: var(--dark);
+      border-left: 2px solid #e5e7eb;
+      border-right: 2px solid #e5e7eb;
+      line-height: 52px; min-width: 64px;
+    }
+
+    .qty-total {
+      font-size: 0.9rem; color: #6b7280; margin-bottom: 24px; margin-top: -16px;
+    }
+
+    .qty-total strong {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.15rem; color: var(--red);
+    }
+
+    /* ── FORM ── */
+    .form-sep {
+      height: 1px; background: #f3f4f6; margin: 4px 0 24px;
+    }
+
+    .form-label {
+      display: block; font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--dark-mid); margin-bottom: 7px;
+    }
+
+    .form-input {
+      width: 100%; padding: 13px 16px;
+      border: 2px solid #e5e7eb; border-radius: 8px;
+      font-size: 0.9375rem; color: var(--dark);
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s;
+      margin-bottom: 16px;
+      background: white;
+    }
+
+    .form-input:focus { outline: none; border-color: var(--red); }
+
+    /* ── PAYMENT SECTION ── */
+    .payment-heading {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--red);
+      margin-bottom: 14px; display: block;
+    }
+
+    /* Stripe element */
+    #payment-element { margin-bottom: 20px; }
+
+    .payment-error {
+      background: #fef2f2; border: 1px solid #fca5a5;
+      border-radius: 8px; padding: 12px 16px;
+      font-size: 0.875rem; color: #dc2626;
+      margin-bottom: 16px; display: none;
+    }
+
+    /* ── BUTTONS ── */
+    .btn-pay {
+      width: 100%; padding: 17px;
+      background: var(--red); color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.2rem; letter-spacing: 0.04em;
+      border: none; border-radius: 10px; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(185,28,28,0.4);
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      min-height: 56px;
+    }
+
+    .btn-pay:hover {
+      background: var(--red-light); transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(185,28,28,0.45);
+    }
+
+    .btn-pay:active { transform: translateY(0); }
+    .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 20px 0;
+    }
+
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: #e5e7eb;
+    }
+
+    .divider span {
+      font-size: 0.75rem; color: #9ca3af;
+      font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    }
+
+    .btn-venmo {
+      width: 100%; padding: 17px;
+      background: #008cff; color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.2rem; letter-spacing: 0.04em;
+      border: none; border-radius: 10px; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,140,255,0.35);
+      transition: background 0.2s, transform 0.15s;
+      text-decoration: none; display: flex;
+      align-items: center; justify-content: center;
+      gap: 10px; min-height: 56px;
+    }
+
+    .btn-venmo:hover { background: #0077dd; transform: translateY(-2px); }
+    .btn-venmo:active { transform: translateY(0); }
+
+    .venmo-note {
+      font-size: 0.78rem; color: #6b7280;
+      text-align: center; margin-top: 10px; line-height: 1.5;
+    }
+
+    .secure-note {
+      font-size: 0.72rem; color: #9ca3af;
+      text-align: center; margin-top: 14px;
+    }
+
+    /* ── BACK BUTTON ── */
+    .btn-back {
+      width: 100%; padding: 13px;
+      background: none; border: 2px solid #e5e7eb;
+      border-radius: 10px; font-size: 0.9rem; font-weight: 600;
+      color: #6b7280; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      margin-top: 10px; min-height: 48px;
+    }
+
+    .btn-back:hover { border-color: var(--dark); color: var(--dark); }
+
+    /* ── SUCCESS ── */
+    .success-state {
+      display: none; text-align: center; padding: 40px 32px;
+    }
+
+    .success-state.show { display: block; }
+
+    .success-emoji {
+      font-size: 4rem; display: block; margin-bottom: 16px;
+      animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    @keyframes pop {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    .success-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2rem; color: var(--red); margin-bottom: 10px;
+    }
+
+    .success-msg {
+      font-size: 0.9375rem; color: #4b5563; line-height: 1.65;
+    }
+
+    /* ── VENMO PENDING ── */
+    .venmo-pending {
+      display: none; text-align: center; padding: 40px 32px;
+    }
+
+    .venmo-pending.show { display: block; }
+
+    .pending-emoji { font-size: 3rem; display: block; margin-bottom: 16px; }
+
+    .pending-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.75rem; color: #008cff; margin-bottom: 10px;
+    }
+
+    .pending-msg {
+      font-size: 0.9375rem; color: #4b5563; line-height: 1.65;
+    }
+
+    /* ── STEPS INDICATOR ── */
+    .step-form { }
+    .step-payment { display: none; }
+
+    /* ── PAYMENT SUMMARY ── */
+    .payment-summary {
+      background: var(--cream-dark);
+      border: 1px solid #fde8c8;
+      border-radius: 10px; padding: 16px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .payment-summary-left { font-size: 0.875rem; color: #6b7280; }
+    .payment-summary-left strong { display: block; font-size: 1rem; color: var(--dark); }
+
+    .payment-summary-amount {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2rem; color: var(--red);
+    }
+
+    /* ── WHAT'S INCLUDED ── */
+    .included-section {
+      background: var(--red-dark);
+      background-image: linear-gradient(135deg, var(--red-dark) 0%, var(--dark-mid) 100%);
+      border-radius: 16px;
+      padding: 40px 32px;
+      margin-bottom: 32px;
+      color: white;
+    }
+
+    .included-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.75rem; color: #fbbf24;
+      margin-bottom: 24px; text-align: center;
+      letter-spacing: 0.02em;
+    }
+
+    .included-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .included-item {
+      text-align: center;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 20px 12px;
+    }
+
+    .included-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
+
+    .included-label {
+      font-size: 0.875rem; font-weight: 700;
+      color: white; letter-spacing: 0.02em;
+    }
+
+    .included-sub {
+      font-size: 0.75rem; color: rgba(255,255,255,0.55);
+      margin-top: 4px; line-height: 1.4;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center; padding: 32px 24px;
+      background: var(--dark);
+    }
+
+    .footer a {
+      color: rgba(255,255,255,0.4); text-decoration: none;
+      font-size: 0.8rem; transition: color 0.2s;
+    }
+
+    .footer a:hover { color: #fbbf24; }
+
+    @media (max-width: 600px) {
+      .hero { padding: 48px 20px 64px; }
+      .hero-title { font-size: clamp(2.4rem, 12vw, 3.5rem); }
+      .perks { flex-direction: column; }
+      .perk { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.15); justify-content: center; }
+      .perk:last-child { border-bottom: none; }
+      .main { padding: 36px 16px 64px; }
+      .ticket-card-header { flex-direction: column; gap: 16px; align-items: flex-start; }
+      .ticket-card-body { padding: 24px 20px; }
+      .included-grid { grid-template-columns: 1fr; }
+      .included-section { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">🎟 Exclusive Invite — Fundraiser Event</div>
+  <span class="hero-emoji">🦞</span>
+  <h1 class="hero-title">Crawfish <span>Boil!</span></h1>
+  <p class="hero-subtitle">
+    Join us for a night of good food, cold drinks, and great company.
+    All proceeds support the Lighthouse to Liberty Row expedition.
+  </p>
+  <div class="hero-details">
+    <span class="hero-pill">🗓 Date TBA</span>
+    <span class="hero-pill">📍 Location TBA</span>
+    <span class="hero-pill">🎟 $50 per person</span>
+    <span class="hero-pill">🦞 All-Inclusive</span>
+  </div>
+</section>
+
+<!-- PERKS STRIP -->
+<div class="perks">
+  <div class="perk"><span class="perk-icon">🦞</span> Crawfish &amp; Food</div>
+  <div class="perk"><span class="perk-icon">🍺</span> Beer &amp; Drinks</div>
+  <div class="perk"><span class="perk-icon">🥃</span> Alcohol Included</div>
+  <div class="perk"><span class="perk-icon">🎶</span> Good Times</div>
+</div>
+
+<main class="main">
+
+  <!-- WHAT'S INCLUDED -->
+  <div class="included-section">
+    <div class="included-title">Everything's On Us 🙌</div>
+    <div class="included-grid">
+      <div class="included-item">
+        <span class="included-icon">🦞</span>
+        <div class="included-label">Crawfish Boil</div>
+        <div class="included-sub">Fresh, seasoned, and piled high</div>
+      </div>
+      <div class="included-item">
+        <span class="included-icon">🍽️</span>
+        <div class="included-label">Full Food Spread</div>
+        <div class="included-sub">Corn, potatoes, sausage &amp; more</div>
+      </div>
+      <div class="included-item">
+        <span class="included-icon">🥃</span>
+        <div class="included-label">Open Bar</div>
+        <div class="included-sub">Beer, seltzers &amp; spirits all night</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TICKET CARD -->
+  <div class="ticket-card">
+    <div class="ticket-card-header">
+      <div class="ticket-card-title">🎟 Get Your Tickets</div>
+      <div class="ticket-price-badge">
+        <div class="price">$50</div>
+        <div class="per">per person</div>
+      </div>
+    </div>
+
+    <div class="ticket-card-body">
+
+      <!-- SUCCESS STATE -->
+      <div class="success-state" id="successState">
+        <span class="success-emoji">🎉</span>
+        <div class="success-title">You're In!</div>
+        <p class="success-msg">
+          Payment confirmed — your ticket is reserved.<br>
+          Check your email for details. See you at the boil! 🦞
+        </p>
+      </div>
+
+      <!-- VENMO PENDING STATE -->
+      <div class="venmo-pending" id="venmoPending">
+        <span class="pending-emoji">🔄</span>
+        <div class="pending-title">Almost There!</div>
+        <p class="pending-msg">
+          Your spot is <strong>reserved</strong>.<br>
+          Please send <strong id="venmoPendingAmount">$50</strong> on Venmo to
+          <strong>@kyle-rumaker</strong> with the note <strong>"Crawfish Boil"</strong>.<br><br>
+          An admin will confirm your payment and you'll be all set!
+        </p>
+      </div>
+
+      <!-- STEP 1: Quantity + Info -->
+      <div class="step-form" id="stepForm">
+        <span class="qty-label">How many tickets?</span>
+        <div class="qty-row">
+          <button class="qty-btn" onclick="changeQty(-1)" aria-label="Remove ticket">−</button>
+          <div class="qty-display" id="qtyDisplay">1</div>
+          <button class="qty-btn" onclick="changeQty(1)" aria-label="Add ticket">+</button>
+        </div>
+        <p class="qty-total">Total: <strong id="qtyTotal">$50</strong></p>
+
+        <div class="form-sep"></div>
+
+        <label class="form-label" for="guestName">Your Name *</label>
+        <input type="text" id="guestName" class="form-input" placeholder="Ryan Fisher" autocomplete="name">
+
+        <label class="form-label" for="guestEmail">Email Address *</label>
+        <input type="email" id="guestEmail" class="form-input" placeholder="you@email.com" autocomplete="email">
+
+        <button class="btn-pay" onclick="continueToPayment()">
+          Get Tickets →
+        </button>
+      </div>
+
+      <!-- STEP 2: Payment -->
+      <div class="step-payment" id="stepPayment">
+        <div class="payment-summary">
+          <div class="payment-summary-left">
+            <strong id="summaryTickets">1 Ticket</strong>
+            Crawfish Boil Fundraiser
+          </div>
+          <div class="payment-summary-amount" id="summaryAmount">$50</div>
+        </div>
+
+        <span class="payment-heading">💳 Pay by Card</span>
+        <div class="payment-error" id="paymentError"></div>
+        <div id="payment-element"></div>
+        <button class="btn-pay" id="payBtn" onclick="submitPayment()">Complete Purchase</button>
+
+        <div class="divider"><span>or</span></div>
+
+        <button class="btn-venmo" id="venmoBtn" onclick="handleVenmo()">
+          Pay on Venmo
+        </button>
+        <p class="venmo-note">
+          Tap to open the Venmo app · An admin will confirm your payment manually
+        </p>
+
+        <p class="secure-note">🔒 Secured by Stripe · SSL encrypted</p>
+
+        <button class="btn-back" onclick="backToForm()">← Change details</button>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <a href="/">← Back to Lighthouse to Liberty Row</a>
+</footer>
+
+<script src="../js/supabase-config.js"></script>
+<script>
+  const STRIPE_PK = 'pk_live_51TJ1bqCEx9pMe0hSzmNtUBRlPDWzuytNGrtqHaitKE4EVMory6HJo77K7zLShbxNLGd0FMgORGYGetUZK1D1yIrF00Tj2TaqAq';
+  const stripe = Stripe(STRIPE_PK);
+
+  let qty = 1;
+  let stripeElements = null;
+  let clientSecret   = null;
+
+  // ── Quantity ──────────────────────────────────────────────
+  function changeQty(delta) {
+    qty = Math.max(1, Math.min(20, qty + delta));
+    document.getElementById('qtyDisplay').textContent = qty;
+    document.getElementById('qtyTotal').textContent   = '$' + (qty * 50).toLocaleString();
+  }
+
+  // ── Step 1 → Step 2 ───────────────────────────────────────
+  async function continueToPayment() {
+    const name  = document.getElementById('guestName').value.trim();
+    const email = document.getElementById('guestEmail').value.trim();
+
+    if (!name)  { alert('Please enter your name.'); return; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert('Please enter a valid email address.'); return;
+    }
+
+    const btn = document.querySelector('#stepForm .btn-pay');
+    btn.disabled = true;
+    btn.textContent = 'Setting up…';
+
+    try {
+      const res = await fetch('/api/create-crawfish-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: qty, name, email })
+      });
+
+      const data = await res.json();
+      if (data.error || !data.clientSecret) throw new Error(data.error || 'Setup failed');
+
+      clientSecret = data.clientSecret;
+
+      stripeElements = stripe.elements({ clientSecret, appearance: {
+        theme: 'stripe',
+        variables: {
+          colorPrimary:    '#b91c1c',
+          colorBackground: '#ffffff',
+          colorText:       '#1c0a00',
+          colorDanger:     '#dc2626',
+          fontFamily:      'Inter, sans-serif',
+          borderRadius:    '8px',
+          fontSizeBase:    '15px'
+        }
+      }});
+
+      stripeElements.create('payment').mount('#payment-element');
+
+      const total = '$' + (qty * 50).toLocaleString();
+      document.getElementById('summaryTickets').textContent = qty + ' Ticket' + (qty > 1 ? 's' : '');
+      document.getElementById('summaryAmount').textContent  = total;
+      document.getElementById('venmoPendingAmount').textContent = total;
+
+      document.getElementById('stepForm').style.display    = 'none';
+      document.getElementById('stepPayment').style.display = 'block';
+
+    } catch (err) {
+      console.error('continueToPayment:', err);
+      alert('Something went wrong. Please try again.');
+      btn.disabled = false;
+      btn.textContent = 'Get Tickets →';
+    }
+  }
+
+  // ── Back ──────────────────────────────────────────────────
+  function backToForm() {
+    document.getElementById('stepPayment').style.display = 'none';
+    document.getElementById('stepForm').style.display    = 'block';
+    document.getElementById('payment-element').innerHTML  = '';
+    const btn = document.querySelector('#stepForm .btn-pay');
+    btn.disabled = false;
+    btn.textContent = 'Get Tickets →';
+    stripeElements = null;
+    clientSecret   = null;
+  }
+
+  // ── Stripe payment ────────────────────────────────────────
+  async function submitPayment() {
+    if (!stripeElements) return;
+
+    const btn   = document.getElementById('payBtn');
+    const errEl = document.getElementById('paymentError');
+    btn.disabled = true;
+    btn.textContent = 'Processing…';
+    errEl.style.display = 'none';
+
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      elements: stripeElements,
+      confirmParams: { return_url: 'https://www.lighthouse2libertyrow.com/crawfish' },
+      redirect: 'if_required'
+    });
+
+    if (error) {
+      errEl.textContent = error.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Complete Purchase';
+      return;
+    }
+
+    if (paymentIntent?.status === 'succeeded') {
+      await recordTicket('stripe', 'paid', paymentIntent.id);
+      showSuccess();
+    }
+  }
+
+  // ── Venmo ─────────────────────────────────────────────────
+  async function handleVenmo() {
+    const name  = document.getElementById('guestName').value.trim();
+    const email = document.getElementById('guestEmail').value.trim();
+    const total = qty * 50;
+    const note  = encodeURIComponent('Crawfish Boil x' + qty);
+
+    // Save pending ticket first
+    await recordTicket('venmo', 'pending', null);
+
+    // Deep-link to Venmo app on mobile, fallback to web
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.location = `venmo://paycharge?txn=pay&recipients=kyle-rumaker&amount=${total}&note=${note}`;
+      setTimeout(() => { window.location = 'https://venmo.com/kyle-rumaker'; }, 1500);
+    } else {
+      window.open('https://venmo.com/kyle-rumaker', '_blank');
+    }
+
+    // Show pending confirmation
+    document.getElementById('stepPayment').style.display = 'none';
+    document.getElementById('venmoPending').classList.add('show');
+  }
+
+  // ── Record in Supabase ────────────────────────────────────
+  async function recordTicket(method, status, stripeId) {
+    const name  = document.getElementById('guestName').value.trim();
+    const email = document.getElementById('guestEmail').value.trim();
+
+    await db.from('crawfish_tickets').insert({
+      name,
+      email,
+      quantity:       qty,
+      amount:         qty * 50,
+      payment_method: method,
+      payment_status: status,
+      stripe_pi_id:   stripeId || null
+    });
+  }
+
+  function showSuccess() {
+    document.getElementById('stepPayment').style.display = 'none';
+    document.getElementById('successState').classList.add('show');
+  }
+
+  // ── Handle Stripe 3DS redirect return ────────────────────
+  async function checkReturn() {
+    const params       = new URLSearchParams(window.location.search);
+    const clientSecret = params.get('payment_intent_client_secret');
+    if (!clientSecret) return;
+
+    const { paymentIntent } = await stripe.retrievePaymentIntent(clientSecret);
+    if (paymentIntent?.status === 'succeeded') {
+      const m = paymentIntent.metadata;
+      qty = parseInt(m?.quantity || 1);
+
+      await db.from('crawfish_tickets').insert({
+        name:           m?.name  || null,
+        email:          m?.email || null,
+        quantity:       qty,
+        amount:         paymentIntent.amount / 100,
+        payment_method: 'stripe',
+        payment_status: 'paid',
+        stripe_pi_id:   paymentIntent.id
+      });
+
+      document.getElementById('stepForm').style.display    = 'none';
+      document.getElementById('stepPayment').style.display = 'none';
+      showSuccess();
+    }
+
+    window.history.replaceState({}, '', '/crawfish');
+  }
+
+  checkReturn();
+</script>
+</body>
+</html>

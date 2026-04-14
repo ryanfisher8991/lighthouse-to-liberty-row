@@ -3,6 +3,7 @@
     { "source": "/donate",   "destination": "/donate/index.html" },
     { "source": "/sponsors", "destination": "/sponsors/index.html" },
     { "source": "/join",     "destination": "/join/index.html" },
-    { "source": "/admin",    "destination": "/admin/index.html" }
+    { "source": "/admin",    "destination": "/admin/index.html" },
+    { "source": "/crawfish", "destination": "/crawfish/index.html" }
   ]
 }
