@@ -694,7 +694,7 @@
       const res = await fetch('/api/create-sponsor-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier, sponsorId: sponsor.id, bizName, contactEmail })
+        body: JSON.stringify({ tier, sponsorId, bizName, contactEmail })
       });
       const { clientSecret, error: payErr } = await res.json();
       if (payErr || !clientSecret) throw new Error(payErr || 'Failed to create payment');
