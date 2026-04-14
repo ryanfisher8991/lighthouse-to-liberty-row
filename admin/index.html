@@ -260,6 +260,94 @@
       .add-donation-grid { grid-template-columns: 1fr; }
       .sponsor-form-grid { grid-template-columns: 1fr; }
     }
+    .action-btn.edit { background: #f3e8ff; color: #7c3aed; }
+    .action-btn.edit:hover { background: #ede9fe; }
+
+    /* ===== SPONSOR EDIT MODAL ===== */
+    #sponsorEditModal {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(12,21,35,0.75);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .sp-edit-card {
+      background: white; border-radius: 8px;
+      width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    }
+    .sp-edit-header {
+      background: var(--navy-dark); color: white;
+      padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0;
+    }
+    .sp-edit-header h3 { font-size: 0.9rem; font-weight: 700; letter-spacing: 0.05em; }
+    .sp-edit-close {
+      background: none; border: none; color: rgba(255,255,255,0.6);
+      font-size: 1.25rem; cursor: pointer; line-height: 1; padding: 2px 6px;
+    }
+    .sp-edit-close:hover { color: white; }
+    .sp-edit-body { padding: 24px; }
+    .sp-edit-section { margin-bottom: 24px; }
+    .sp-edit-section-label {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--gray); margin-bottom: 12px; display: block;
+    }
+    .sp-edit-logo-row {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    }
+    .sp-edit-logo-preview {
+      width: 72px; height: 72px; object-fit: contain;
+      border: 1px solid #e2e8f0; border-radius: 4px; background: #f8fafc;
+    }
+    .sp-edit-logo-placeholder {
+      width: 72px; height: 72px;
+      border: 2px dashed #e2e8f0; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; color: var(--gray); text-align: center;
+    }
+    .sp-edit-file-btn {
+      padding: 8px 16px; background: #f1f5f9; border: 1px solid #e2e8f0;
+      border-radius: 4px; font-size: 0.8rem; font-weight: 600; color: var(--navy);
+      cursor: pointer; transition: background 0.15s;
+    }
+    .sp-edit-file-btn:hover { background: #e2e8f0; }
+    .sp-edit-file-name { font-size: 0.78rem; color: var(--gray); margin-top: 4px; }
+    .sp-edit-sizes {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .sp-edit-size-row {
+      display: flex; align-items: center; gap: 6px;
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      border-radius: 4px; padding: 6px 10px;
+    }
+    .sp-edit-size-label { font-size: 0.8rem; font-weight: 600; color: var(--navy); min-width: 28px; text-align: center; }
+    .sp-edit-size-btn {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 1px solid #e2e8f0; background: white;
+      font-size: 0.85rem; font-weight: 700; color: var(--navy);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.1s;
+    }
+    .sp-edit-size-btn:hover { background: #e2e8f0; }
+    .sp-edit-size-qty { font-size: 0.85rem; font-weight: 700; min-width: 16px; text-align: center; color: var(--navy); }
+    .sp-edit-footer {
+      padding: 16px 24px; border-top: 1px solid #e2e8f0;
+      display: flex; gap: 10px; justify-content: flex-end;
+    }
+    .sp-edit-cancel {
+      padding: 9px 20px; background: #f1f5f9; border: none; border-radius: 4px;
+      font-size: 0.8rem; font-weight: 600; color: var(--gray); cursor: pointer;
+    }
+    .sp-edit-cancel:hover { background: #e2e8f0; }
+    .sp-edit-save {
+      padding: 9px 24px; background: var(--gold); border: none; border-radius: 4px;
+      font-size: 0.8rem; font-weight: 700; color: var(--navy-dark); cursor: pointer;
+      transition: background 0.15s;
+    }
+    .sp-edit-save:hover { background: var(--gold-light); }
+    .sp-edit-save:disabled { opacity: 0.6; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -804,6 +892,7 @@
                 <td>${s.approved ? '<span class="badge approved">Approved</span>' : '—'}</td>
                 <td>
                   ${!s.approved ? `<button class="action-btn approve" onclick="approveSponsor('${s.id}')">Approve</button>` : ''}
+                  <button class="action-btn edit" onclick="openEditModal('${s.id}','${s.tier}','${s.business_name}','${s.logo_url || ''}')">Edit</button>
                   ${s.logo_url ? `<button class="action-btn download" onclick="downloadLogo('${s.logo_url}', '${s.business_name}')">Logo</button>` : ''}
                   <button class="action-btn delete" onclick="deleteSponsor('${s.id}')">Delete</button>
                 </td>
@@ -853,6 +942,7 @@
             </div>
             <div class="record-card-actions">
               ${!s.approved ? `<button class="action-btn approve" onclick="approveSponsor('${s.id}')">Approve</button>` : ''}
+              <button class="action-btn edit" onclick="openEditModal('${s.id}','${s.tier}','${s.business_name}','${s.logo_url || ''}')">Edit</button>
               ${s.logo_url ? `<button class="action-btn download" onclick="downloadLogo('${s.logo_url}', '${s.business_name}')">Logo</button>` : ''}
               <button class="action-btn delete" onclick="deleteSponsor('${s.id}')">Delete</button>
             </div>
@@ -1060,6 +1150,163 @@
         </tbody>
       </table>`;
   }
+  // ===== SPONSOR EDIT MODAL =====
+  const EDIT_SIZES = ['XS','S','M','L','XL','XXL'];
+  const SHIRT_COUNTS = { bronze: 1, silver: 2, gold: 5 };
+  let editSponsorId   = null;
+  let editSponsorTier = null;
+  let editLogoFile    = null;
+
+  async function openEditModal(id, tier, bizName, logoUrl) {
+    editSponsorId   = id;
+    editSponsorTier = tier;
+    editLogoFile    = null;
+
+    document.getElementById('spEditTitle').textContent = bizName;
+
+    // Logo preview
+    const preview = document.getElementById('spEditLogoPreview');
+    const placeholder = document.getElementById('spEditLogoPlaceholder');
+    if (logoUrl) {
+      preview.src = logoUrl;
+      preview.style.display = 'block';
+      placeholder.style.display = 'none';
+    } else {
+      preview.style.display = 'none';
+      placeholder.style.display = 'flex';
+    }
+    document.getElementById('spEditFileName').textContent = '';
+    document.getElementById('spEditLogoInput').value = '';
+
+    // Load current shirt orders
+    const { data: orders } = await db.from('sponsor_shirt_orders')
+      .select('size').eq('sponsor_id', id);
+    const counts = {};
+    EDIT_SIZES.forEach(s => counts[s] = 0);
+    (orders || []).forEach(o => { if (counts[o.size] !== undefined) counts[o.size]++; });
+
+    const container = document.getElementById('spEditSizes');
+    container.innerHTML = EDIT_SIZES.map(s => `
+      <div class="sp-edit-size-row">
+        <span class="sp-edit-size-label">${s}</span>
+        <button class="sp-edit-size-btn" onclick="editChangeQty('${s}',-1)">−</button>
+        <span class="sp-edit-size-qty" id="edit-qty-${s}">${counts[s]}</span>
+        <button class="sp-edit-size-btn" onclick="editChangeQty('${s}',1)">+</button>
+      </div>
+    `).join('');
+
+    const total = SHIRT_COUNTS[tier] || 0;
+    document.getElementById('spEditShirtNote').textContent =
+      total ? `${tier.charAt(0).toUpperCase()+tier.slice(1)} tier includes ${total} shirt${total>1?'s':''}` : '';
+
+    document.getElementById('sponsorEditModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeEditModal() {
+    document.getElementById('sponsorEditModal').style.display = 'none';
+    document.body.style.overflow = '';
+    editSponsorId = editLogoFile = null;
+  }
+
+  function editChangeQty(size, delta) {
+    const el  = document.getElementById('edit-qty-' + size);
+    const cur = parseInt(el.textContent) || 0;
+    const next = Math.max(0, cur + delta);
+    el.textContent = next;
+  }
+
+  function editLogoSelected(input) {
+    editLogoFile = input.files[0] || null;
+    document.getElementById('spEditFileName').textContent = editLogoFile ? editLogoFile.name : '';
+    if (editLogoFile) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const preview = document.getElementById('spEditLogoPreview');
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        document.getElementById('spEditLogoPlaceholder').style.display = 'none';
+      };
+      reader.readAsDataURL(editLogoFile);
+    }
+  }
+
+  async function saveEditSponsor() {
+    const btn = document.getElementById('spEditSaveBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    try {
+      // Upload logo if a new one was selected
+      if (editLogoFile) {
+        const ext  = editLogoFile.name.split('.').pop();
+        const path = `${editSponsorId}.${ext}`;
+        const { error: upErr } = await db.storage.from('sponsor-logos')
+          .upload(path, editLogoFile, { upsert: true });
+        if (upErr) throw new Error('Logo upload failed: ' + upErr.message);
+        const { data } = db.storage.from('sponsor-logos').getPublicUrl(path);
+        await db.from('sponsors').update({ logo_url: data.publicUrl }).eq('id', editSponsorId);
+      }
+
+      // Replace shirt orders
+      await db.from('sponsor_shirt_orders').delete().eq('sponsor_id', editSponsorId);
+      const newSizes = EDIT_SIZES.flatMap(s => {
+        const qty = parseInt(document.getElementById('edit-qty-' + s).textContent) || 0;
+        return Array(qty).fill(s);
+      });
+      if (newSizes.length) {
+        const { error: shirtErr } = await db.from('sponsor_shirt_orders')
+          .insert(newSizes.map(size => ({ sponsor_id: editSponsorId, size })));
+        if (shirtErr) throw new Error('Shirt save failed: ' + shirtErr.message);
+      }
+
+      closeEditModal();
+      loadSponsors();
+    } catch (err) {
+      console.error('saveEditSponsor:', err);
+      alert('Save failed: ' + err.message);
+      btn.disabled = false;
+      btn.textContent = 'Save Changes';
+    }
+  }
 </script>
+
+<!-- SPONSOR EDIT MODAL -->
+<div id="sponsorEditModal" style="display:none;" onclick="if(event.target===this)closeEditModal()">
+  <div class="sp-edit-card">
+    <div class="sp-edit-header">
+      <h3 id="spEditTitle">Edit Sponsor</h3>
+      <button class="sp-edit-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="sp-edit-body">
+
+      <div class="sp-edit-section">
+        <span class="sp-edit-section-label">Logo</span>
+        <div class="sp-edit-logo-row">
+          <img id="spEditLogoPreview" class="sp-edit-logo-preview" src="" alt="" style="display:none;">
+          <div id="spEditLogoPlaceholder" class="sp-edit-logo-placeholder">No logo</div>
+          <div>
+            <label class="sp-edit-file-btn">
+              Choose File
+              <input type="file" id="spEditLogoInput" accept="image/*" style="display:none;" onchange="editLogoSelected(this)">
+            </label>
+            <div class="sp-edit-file-name" id="spEditFileName"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-edit-section">
+        <span class="sp-edit-section-label">Shirt Sizes <span id="spEditShirtNote" style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--gray);font-size:0.75rem;margin-left:6px;"></span></span>
+        <div class="sp-edit-sizes" id="spEditSizes"></div>
+      </div>
+
+    </div>
+    <div class="sp-edit-footer">
+      <button class="sp-edit-cancel" onclick="closeEditModal()">Cancel</button>
+      <button class="sp-edit-save" id="spEditSaveBtn" onclick="saveEditSponsor()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
