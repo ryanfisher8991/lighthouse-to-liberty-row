@@ -718,7 +718,7 @@
       console.error('submitApplication error:', err);
       if (spSponsorId) {
         // Insert succeeded but something after (logo, shirts, or payment API) failed
-        alert('Application saved but payment setup failed. We\'ll contact you to arrange payment.');
+        alert('DEBUG — ' + (err?.message || err));
         document.getElementById('successBanner').classList.add('show');
         btn.textContent = 'Application Submitted ✓';
         closeForm();
