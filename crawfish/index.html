@@ -32,6 +32,80 @@
       overflow-x: hidden;
     }
 
+    /* ── HERO LOGO ── */
+    .hero-logo {
+      display: block; height: 72px; width: auto; margin: 0 auto 20px;
+      filter: brightness(0) invert(1);
+      opacity: 0.92;
+    }
+
+    @media (max-width: 600px) { .hero-logo { height: 52px; } }
+
+    /* ── PROCEEDS CALLOUT ── */
+    .proceeds-callout {
+      background: linear-gradient(135deg, #1a2f5e 0%, var(--navy) 100%);
+      border-radius: 14px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      display: flex; align-items: center; gap: 20px;
+      box-shadow: 0 4px 24px rgba(22,36,71,0.25);
+    }
+
+    .proceeds-icon { font-size: 2.5rem; flex-shrink: 0; }
+
+    .proceeds-text { flex: 1; }
+
+    .proceeds-label {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #fbbf24;
+      margin-bottom: 6px;
+    }
+
+    .proceeds-headline {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.25rem; color: white; line-height: 1.2; margin-bottom: 6px;
+    }
+
+    .proceeds-sub {
+      font-size: 0.82rem; color: rgba(255,255,255,0.6); line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+      .proceeds-callout { flex-direction: column; text-align: center; padding: 24px 20px; gap: 12px; }
+    }
+
+    /* ── ADDITIONAL NAMES ── */
+    .additional-names-section { margin-top: 4px; }
+
+    .additional-names-label {
+      display: block; font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--dark-mid); margin-bottom: 8px;
+      padding-top: 8px; border-top: 1px solid #f3f4f6; margin-top: 4px;
+    }
+
+    .additional-name-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+    }
+
+    .guest-number {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--red);
+      background: #fef2f2; border-radius: 4px;
+      padding: 4px 8px; white-space: nowrap; flex-shrink: 0;
+    }
+
+    .additional-name-input {
+      flex: 1; padding: 11px 14px;
+      border: 2px solid #e5e7eb; border-radius: 8px;
+      font-size: 0.9375rem; color: var(--dark);
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s;
+      background: white;
+    }
+
+    .additional-name-input:focus { outline: none; border-color: var(--red); }
+
     /* ── HERO ── */
     .hero {
       background: var(--red-dark);
@@ -470,34 +544,45 @@
 
 <!-- HERO -->
 <section class="hero">
+  <img src="../brand_assets/Logo/L2L_LOGO2.png" alt="Lighthouse to Liberty Row" class="hero-logo">
   <div class="hero-badge">🎟 Exclusive Invite — Fundraiser Event</div>
   <span class="hero-emoji">🦞</span>
   <h1 class="hero-title">Crawfish <span>Boil!</span></h1>
   <p class="hero-subtitle">
-    Join us for a night of good food, cold drinks, and great company.
-    All proceeds support the Lighthouse to Liberty Row expedition.
+    Join us for an afternoon of great food, cold kegs, and good company.
+    Every ticket directly funds the <strong style="color:#fbbf24">Lighthouse to Liberty Row</strong> rowing expedition.
   </p>
   <div class="hero-details">
-    <span class="hero-pill">🗓 Date TBA</span>
-    <span class="hero-pill">📍 Location TBA</span>
+    <span class="hero-pill">🗓 May 30, 2026 · 1 PM</span>
+    <span class="hero-pill">📍 321 Marshallville Rd, Woodbine, NJ</span>
     <span class="hero-pill">🎟 $50 per person</span>
-    <span class="hero-pill">🦞 All-Inclusive</span>
+    <span class="hero-pill">🦞 Food &amp; Kegs Included</span>
   </div>
 </section>
 
 <!-- PERKS STRIP -->
 <div class="perks">
   <div class="perk"><span class="perk-icon">🦞</span> Crawfish &amp; Food</div>
-  <div class="perk"><span class="perk-icon">🍺</span> Beer &amp; Drinks</div>
-  <div class="perk"><span class="perk-icon">🥃</span> Alcohol Included</div>
+  <div class="perk"><span class="perk-icon">🍺</span> Kegs on Tap</div>
+  <div class="perk"><span class="perk-icon">🎒</span> BYOB Welcome</div>
   <div class="perk"><span class="perk-icon">🎶</span> Good Times</div>
 </div>
 
 <main class="main">
 
+  <!-- PROCEEDS CALLOUT -->
+  <div class="proceeds-callout">
+    <span class="proceeds-icon">🚣</span>
+    <div class="proceeds-text">
+      <div class="proceeds-label">Your Ticket Makes a Difference</div>
+      <div class="proceeds-headline">100% of proceeds fund Lighthouse to Liberty Row</div>
+      <div class="proceeds-sub">Ryan Fisher &amp; Kyle Rumaker are rowing 150 miles from Cape May, NJ to Liberty Island this September. Every dollar raised gets them closer to the finish line.</div>
+    </div>
+  </div>
+
   <!-- WHAT'S INCLUDED -->
   <div class="included-section">
-    <div class="included-title">Everything's On Us 🙌</div>
+    <div class="included-title">What's Included 🙌</div>
     <div class="included-grid">
       <div class="included-item">
         <span class="included-icon">🦞</span>
@@ -510,10 +595,13 @@
         <div class="included-sub">Corn, potatoes, sausage &amp; more</div>
       </div>
       <div class="included-item">
-        <span class="included-icon">🥃</span>
-        <div class="included-label">Open Bar</div>
-        <div class="included-sub">Beer, seltzers &amp; spirits all night</div>
+        <span class="included-icon">🍺</span>
+        <div class="included-label">Kegs Provided</div>
+        <div class="included-sub">Beer kegs on tap — BYOB if you want anything else</div>
       </div>
+    </div>
+    <div style="text-align:center;margin-top:16px;font-size:0.78rem;color:rgba(255,255,255,0.5);font-style:italic;">
+      Not an open bar — bring your own spirits or seltzers if you'd like more options
     </div>
   </div>
 
@@ -568,6 +656,12 @@
 
         <label class="form-label" for="guestEmail">Email Address *</label>
         <input type="email" id="guestEmail" class="form-input" placeholder="you@email.com" autocomplete="email">
+
+        <!-- Additional guest names — shown when qty > 1 -->
+        <div class="additional-names-section" id="additionalNamesSection" style="display:none;">
+          <span class="additional-names-label">Additional Guest Names *</span>
+          <div id="additionalNamesFields"></div>
+        </div>
 
         <button class="btn-pay" onclick="continueToPayment()">
           Get Tickets →
@@ -626,6 +720,30 @@
     qty = Math.max(1, Math.min(20, qty + delta));
     document.getElementById('qtyDisplay').textContent = qty;
     document.getElementById('qtyTotal').textContent   = '$' + (qty * 50).toLocaleString();
+    renderAdditionalNames();
+  }
+
+  function renderAdditionalNames() {
+    const section = document.getElementById('additionalNamesSection');
+    const fields  = document.getElementById('additionalNamesFields');
+    if (qty <= 1) { section.style.display = 'none'; fields.innerHTML = ''; return; }
+    section.style.display = 'block';
+    // Preserve existing values
+    const existing = Array.from(fields.querySelectorAll('.additional-name-input')).map(i => i.value);
+    fields.innerHTML = '';
+    for (let i = 2; i <= qty; i++) {
+      const row = document.createElement('div');
+      row.className = 'additional-name-row';
+      row.innerHTML = `
+        <span class="guest-number">Guest ${i}</span>
+        <input type="text" class="additional-name-input" placeholder="Full name" autocomplete="off" value="${existing[i-2] || ''}">
+      `;
+      fields.appendChild(row);
+    }
+  }
+
+  function getAdditionalNames() {
+    return Array.from(document.querySelectorAll('.additional-name-input')).map(i => i.value.trim());
   }
 
   // ── Step 1 → Step 2 ───────────────────────────────────────
@@ -636,6 +754,10 @@
     if (!name)  { alert('Please enter your name.'); return; }
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       alert('Please enter a valid email address.'); return;
+    }
+    const addNames = getAdditionalNames();
+    if (qty > 1 && addNames.some(n => !n)) {
+      alert('Please enter a name for every guest.'); return;
     }
 
     const btn = document.querySelector('#stepForm .btn-pay');
@@ -753,17 +875,19 @@
 
   // ── Record in Supabase ────────────────────────────────────
   async function recordTicket(method, status, stripeId) {
-    const name  = document.getElementById('guestName').value.trim();
-    const email = document.getElementById('guestEmail').value.trim();
+    const name     = document.getElementById('guestName').value.trim();
+    const email    = document.getElementById('guestEmail').value.trim();
+    const addNames = getAdditionalNames();
 
     await db.from('crawfish_tickets').insert({
       name,
       email,
-      quantity:       qty,
-      amount:         qty * 50,
-      payment_method: method,
-      payment_status: status,
-      stripe_pi_id:   stripeId || null
+      quantity:         qty,
+      amount:           qty * 50,
+      payment_method:   method,
+      payment_status:   status,
+      stripe_pi_id:     stripeId || null,
+      additional_names: addNames.length ? JSON.stringify(addNames) : null
     });
   }
 
