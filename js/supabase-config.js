@@ -63,3 +63,37 @@ function formatDate(iso) {
 function isAdmin(user) {
   return user?.user_metadata?.role === USER_ROLE.ADMIN;
 }
+
+function renderSponsorTiles(sponsors) {
+  const byTier = { gold: [], silver: [], bronze: [] };
+  sponsors.forEach(s => { if (byTier[s.tier]) byTier[s.tier].push(s); });
+
+  const tierConfig = {
+    gold:   { label: 'Gold Sponsors' },
+    silver: { label: 'Silver Sponsors' },
+    bronze: { label: 'Bronze Sponsors' },
+  };
+
+  return ['gold', 'silver', 'bronze']
+    .filter(t => byTier[t].length)
+    .map(t => `
+      <div class="sponsor-tier-group">
+        <div class="sponsor-tier-label ${t}">${tierConfig[t].label}</div>
+        <div class="sponsor-tiles-row">
+          ${byTier[t].map(s => `
+            <a href="${s.website_url || '#'}" target="${s.website_url ? '_blank' : '_self'}" rel="noopener" class="sponsor-tile ${t}">
+              <div class="sponsor-tile-logo-wrap">
+                ${s.logo_url
+                  ? `<img src="${s.logo_url}" alt="${s.business_name}" loading="lazy">`
+                  : `<span style="font-size:0.8rem;font-weight:700;color:var(--navy);opacity:0.4">${s.business_name.charAt(0)}</span>`}
+              </div>
+              <div class="sponsor-tile-name-wrap">
+                <div class="sponsor-tile-name">${s.business_name}</div>
+                ${s.website_url ? `<span class="sponsor-tile-url">${s.website_url.replace(/^https?:\/\/(www\.)?/, '')}</span>` : ''}
+              </div>
+            </a>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+}

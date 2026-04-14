@@ -1164,6 +1164,10 @@
 
     document.getElementById('spEditTitle').textContent = bizName;
 
+    // Load current website URL
+    const { data: sp } = await db.from('sponsors').select('website_url').eq('id', id).single();
+    document.getElementById('spEditWebsite').value = sp?.website_url || '';
+
     // Logo preview
     const preview = document.getElementById('spEditLogoPreview');
     const placeholder = document.getElementById('spEditLogoPlaceholder');
@@ -1249,6 +1253,10 @@
         await db.from('sponsors').update({ logo_url: data.publicUrl }).eq('id', editSponsorId);
       }
 
+      // Save website URL
+      const websiteUrl = document.getElementById('spEditWebsite').value.trim() || null;
+      await db.from('sponsors').update({ website_url: websiteUrl }).eq('id', editSponsorId);
+
       // Replace shirt orders
       await db.from('sponsor_shirt_orders').delete().eq('sponsor_id', editSponsorId);
       const newSizes = EDIT_SIZES.flatMap(s => {
@@ -1280,6 +1288,13 @@
       <button class="sp-edit-close" onclick="closeEditModal()">✕</button>
     </div>
     <div class="sp-edit-body">
+
+      <div class="sp-edit-section">
+        <span class="sp-edit-section-label">Website URL</span>
+        <input type="url" id="spEditWebsite" placeholder="https://example.com"
+          style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:4px;font-size:0.875rem;font-family:'Inter',sans-serif;color:var(--navy);outline:none;"
+          onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='#e2e8f0'">
+      </div>
 
       <div class="sp-edit-section">
         <span class="sp-edit-section-label">Logo</span>

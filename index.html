@@ -631,6 +631,130 @@
       .cta-section { padding: 64px 20px; }
       .counter-section { padding: 56px 20px; }
     }
+
+    /* ===== SPONSOR TILES ===== */
+    .sponsor-tiles-section {
+      background: var(--sand-light, #faf8f2);
+      padding: 88px 48px;
+    }
+    .sponsor-tiles-inner { max-width: 1100px; margin: 0 auto; }
+    .sponsor-tiles-header { text-align: center; margin-bottom: 56px; }
+    .sponsor-tiles-eyebrow {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 12px; display: block;
+    }
+    .sponsor-tiles-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-weight: 900; color: var(--navy);
+      letter-spacing: -0.02em; line-height: 1.15;
+    }
+    .sponsor-tiles-rule {
+      width: 48px; height: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      margin: 18px auto 0;
+    }
+    .sponsor-tier-group { margin-bottom: 48px; }
+    .sponsor-tier-group:last-child { margin-bottom: 0; }
+    .sponsor-tier-label {
+      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; margin-bottom: 20px; display: flex;
+      align-items: center; gap: 12px;
+    }
+    .sponsor-tier-label::after {
+      content: ''; flex: 1; height: 1px; background: currentColor; opacity: 0.15;
+    }
+    .sponsor-tier-label.gold   { color: #b8860b; }
+    .sponsor-tier-label.silver { color: #64748b; }
+    .sponsor-tier-label.bronze { color: #92400e; }
+    .sponsor-tiles-row {
+      display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch;
+    }
+    .sponsor-tile {
+      background: white; border-radius: 10px;
+      display: flex; flex-direction: column; align-items: center;
+      text-decoration: none; text-align: center;
+      transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease;
+      position: relative; overflow: hidden;
+    }
+    .sponsor-tile::before {
+      content: ''; position: absolute; inset: 0;
+      border-radius: 10px; pointer-events: none;
+    }
+    .sponsor-tile.gold {
+      padding: 28px 28px 22px;
+      min-width: 200px; max-width: 240px; flex: 1;
+      border: 2px solid rgba(201,148,47,0.55);
+      box-shadow: 0 4px 20px rgba(201,148,47,0.12), 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .sponsor-tile.gold:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 40px rgba(201,148,47,0.22), 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .sponsor-tile.silver {
+      padding: 22px 22px 18px;
+      min-width: 160px; max-width: 200px; flex: 1;
+      border: 1.5px solid rgba(148,163,184,0.55);
+      box-shadow: 0 2px 12px rgba(100,116,139,0.1), 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .sponsor-tile.silver:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 32px rgba(100,116,139,0.18), 0 3px 8px rgba(0,0,0,0.07);
+    }
+    .sponsor-tile.bronze {
+      padding: 20px 20px 16px;
+      min-width: 140px; max-width: 180px; flex: 1;
+      border: 1.5px solid rgba(160,82,45,0.4);
+      box-shadow: 0 2px 10px rgba(160,82,45,0.1), 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .sponsor-tile.bronze:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 28px rgba(160,82,45,0.16), 0 3px 8px rgba(0,0,0,0.07);
+    }
+    .sponsor-tile-logo-wrap {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; margin-bottom: 14px;
+    }
+    .sponsor-tile.gold   .sponsor-tile-logo-wrap { height: 80px; }
+    .sponsor-tile.silver .sponsor-tile-logo-wrap { height: 64px; }
+    .sponsor-tile.bronze .sponsor-tile-logo-wrap { height: 54px; }
+    .sponsor-tile-logo-wrap img {
+      max-width: 100%; object-fit: contain;
+    }
+    .sponsor-tile.gold   .sponsor-tile-logo-wrap img { max-height: 80px; }
+    .sponsor-tile.silver .sponsor-tile-logo-wrap img { max-height: 64px; }
+    .sponsor-tile.bronze .sponsor-tile-logo-wrap img { max-height: 54px; }
+    .sponsor-tile-name-wrap { border-top: 1px solid #f1f5f9; width: 100%; padding-top: 12px; }
+    .sponsor-tile-name {
+      font-weight: 700; color: var(--navy); line-height: 1.3; margin-bottom: 4px;
+    }
+    .sponsor-tile.gold   .sponsor-tile-name { font-size: 0.875rem; }
+    .sponsor-tile.silver .sponsor-tile-name { font-size: 0.8rem; }
+    .sponsor-tile.bronze .sponsor-tile-name { font-size: 0.76rem; }
+    .sponsor-tile-url {
+      font-size: 0.7rem; color: var(--gold); opacity: 0.8;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 100%; display: block;
+      transition: opacity 0.15s;
+    }
+    .sponsor-tile:hover .sponsor-tile-url { opacity: 1; }
+    .sponsor-tiles-empty {
+      text-align: center; color: #9ca3af; font-style: italic;
+      font-size: 0.9rem; padding: 24px 0;
+    }
+    @media (max-width: 768px) {
+      .sponsor-tiles-section { padding: 64px 24px; }
+      .sponsor-tiles-row { gap: 14px; }
+      .sponsor-tile.gold, .sponsor-tile.silver, .sponsor-tile.bronze {
+        min-width: 130px; max-width: none;
+      }
+    }
+    @media (max-width: 480px) {
+      .sponsor-tiles-row { gap: 10px; }
+      .sponsor-tile.gold, .sponsor-tile.silver, .sponsor-tile.bronze {
+        min-width: calc(50% - 5px); max-width: calc(50% - 5px); flex: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -918,8 +1042,22 @@
   </div>
 </div>
 
+<!-- SPONSORS -->
+<section class="sponsor-tiles-section">
+  <div class="sponsor-tiles-inner">
+    <div class="sponsor-tiles-header">
+      <span class="sponsor-tiles-eyebrow">Our Partners</span>
+      <h2 class="sponsor-tiles-title">Thank You to Our Sponsors</h2>
+      <div class="sponsor-tiles-rule"></div>
+    </div>
+    <div id="landingSponsorsDisplay">
+      <div class="sponsor-tiles-empty">Loading sponsors…</div>
+    </div>
+  </div>
+</section>
+
 <!-- WAVE white → navy -->
-<div class="wave" style="background:white">
+<div class="wave" style="background:var(--sand-light,#faf8f2)">
   <svg viewBox="0 0 1440 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M0,16 C480,56 960,0 1440,36 L1440,56 L0,56 Z" fill="#162447"/>
   </svg>
@@ -1069,6 +1207,18 @@ try {
     }
   }
 } catch(e) { console.error('Page script error:', e); }
+
+// Load sponsor tiles
+(async () => {
+  const el = document.getElementById('landingSponsorsDisplay');
+  if (!el) return;
+  const sponsors = await getApprovedSponsors();
+  if (!sponsors.length) {
+    el.innerHTML = '<p class="sponsor-tiles-empty">No sponsors yet — <a href="/sponsors" style="color:var(--gold)">be the first!</a></p>';
+    return;
+  }
+  el.innerHTML = renderSponsorTiles(sponsors);
+})();
 </script>
 <script>
 if ('serviceWorker' in navigator) {
