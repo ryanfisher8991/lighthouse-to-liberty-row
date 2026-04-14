@@ -1241,8 +1241,9 @@
       if (editLogoFile) {
         const ext  = editLogoFile.name.split('.').pop();
         const path = `${editSponsorId}.${ext}`;
+        await db.storage.from('sponsor-logos').remove([path]);
         const { error: upErr } = await db.storage.from('sponsor-logos')
-          .upload(path, editLogoFile, { upsert: true });
+          .upload(path, editLogoFile);
         if (upErr) throw new Error('Logo upload failed: ' + upErr.message);
         const { data } = db.storage.from('sponsor-logos').getPublicUrl(path);
         await db.from('sponsors').update({ logo_url: data.publicUrl }).eq('id', editSponsorId);
