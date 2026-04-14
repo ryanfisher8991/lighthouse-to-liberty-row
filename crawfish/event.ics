@@ -1,0 +1,17 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Lighthouse to Liberty Row//Crawfish Boil//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+DTSTART:20260530T130000
+DTEND:20260530T200000
+TZID:America/New_York
+SUMMARY:🦞 Crawfish Boil Fundraiser — Lighthouse to Liberty Row
+DESCRIPTION:Join us for a crawfish boil fundraiser supporting Ryan Fisher & Kyle Rumaker's 150-mile rowing expedition from Cape May to Liberty Island!\n\nFood & kegs included. BYOB if you want anything else.\n$50 per person.
+LOCATION:321 Marshallville Road\, Woodbine\, NJ 08270
+URL:https://www.lighthouse2libertyrow.com/crawfish
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
