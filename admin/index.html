@@ -255,7 +255,6 @@
 
     @media (max-width: 768px) {
       .sidebar { display: none; }
-      .mobile-tabs { display: block; }
       .admin-main { padding: 16px; padding-bottom: calc(116px + env(safe-area-inset-bottom)); }
       .add-donation-grid { grid-template-columns: 1fr; }
       .sponsor-form-grid { grid-template-columns: 1fr; }
@@ -496,36 +495,6 @@
       <button class="logout-btn" onclick="doLogout()">Sign out</button>
     </div>
   </nav>
-
-  <!-- MOBILE BOTTOM TAB BAR -->
-  <div class="mobile-tabs" id="mobileTabs">
-    <div class="mobile-tabs-inner">
-      <button class="mobile-tab active" onclick="showPanel('dashboard', this)" data-panel="dashboard">
-        <span class="tab-icon">📊</span>Dash
-      </button>
-      <button class="mobile-tab" onclick="showPanel('donations', this)" data-panel="donations">
-        <span class="tab-icon">💰</span>Donations
-      </button>
-      <button class="mobile-tab" onclick="showPanel('sponsors', this)" data-panel="sponsors">
-        <span class="tab-icon">🏢</span>Sponsors
-      </button>
-      <button class="mobile-tab" onclick="showPanel('boats', this)" data-panel="boats">
-        <span class="tab-icon">🚣</span>Boats
-      </button>
-      <button class="mobile-tab" onclick="showPanel('crawfish', this)" data-panel="crawfish">
-        <span class="tab-icon">🦞</span>Boil
-      </button>
-      <button class="mobile-tab" onclick="showPanel('financials', this)" data-panel="financials">
-        <span class="tab-icon">💵</span>Finance
-      </button>
-      <button class="mobile-tab" onclick="showPanel('settings', this)" data-panel="settings">
-        <span class="tab-icon">⚙️</span>Settings
-      </button>
-      <a href="/" class="mobile-tab">
-        <span class="tab-icon">🏠</span>Site
-      </a>
-    </div>
-  </div>
 
   <main class="admin-main">
 
@@ -776,12 +745,14 @@
   async function doLogout() {
     await db.auth.signOut();
     document.getElementById('adminPage').classList.remove('show');
+    document.getElementById('mobileTabs').style.display = 'none';
     document.getElementById('loginPage').style.display = 'flex';
   }
 
   function showAdmin(user) {
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('adminPage').classList.add('show');
+    document.getElementById('mobileTabs').style.removeProperty('display');
     document.getElementById('sidebarUser').textContent = user.email;
     loadDashboard();
     loadSettings();
@@ -1800,6 +1771,36 @@
       <button class="sp-edit-cancel" onclick="closeEditModal()">Cancel</button>
       <button class="sp-edit-save" id="spEditSaveBtn" onclick="saveEditSponsor()">Save Changes</button>
     </div>
+  </div>
+</div>
+
+<!-- MOBILE BOTTOM TAB BAR — direct body child so position:fixed works on iOS -->
+<div class="mobile-tabs" id="mobileTabs" style="display:none;">
+  <div class="mobile-tabs-inner">
+    <button class="mobile-tab active" onclick="showPanel('dashboard', this)" data-panel="dashboard">
+      <span class="tab-icon">📊</span>Dash
+    </button>
+    <button class="mobile-tab" onclick="showPanel('donations', this)" data-panel="donations">
+      <span class="tab-icon">💰</span>Donations
+    </button>
+    <button class="mobile-tab" onclick="showPanel('sponsors', this)" data-panel="sponsors">
+      <span class="tab-icon">🏢</span>Sponsors
+    </button>
+    <button class="mobile-tab" onclick="showPanel('boats', this)" data-panel="boats">
+      <span class="tab-icon">🚣</span>Boats
+    </button>
+    <button class="mobile-tab" onclick="showPanel('crawfish', this)" data-panel="crawfish">
+      <span class="tab-icon">🦞</span>Boil
+    </button>
+    <button class="mobile-tab" onclick="showPanel('financials', this)" data-panel="financials">
+      <span class="tab-icon">💵</span>Finance
+    </button>
+    <button class="mobile-tab" onclick="showPanel('settings', this)" data-panel="settings">
+      <span class="tab-icon">⚙️</span>Settings
+    </button>
+    <a href="/" class="mobile-tab">
+      <span class="tab-icon">🏠</span>Site
+    </a>
   </div>
 </div>
 
