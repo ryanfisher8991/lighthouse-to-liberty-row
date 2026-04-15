@@ -256,7 +256,7 @@
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .mobile-tabs { display: block; }
-      .admin-main { padding: 16px; padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+      .admin-main { padding: 16px; padding-bottom: calc(116px + env(safe-area-inset-bottom)); }
       .add-donation-grid { grid-template-columns: 1fr; }
       .sponsor-form-grid { grid-template-columns: 1fr; }
     }
@@ -427,7 +427,8 @@
       padding: 16px; font-size: 0.72rem; overflow-x: auto; line-height: 1.65;
       color: var(--navy); font-family: 'Courier New', monospace;
     }
-    .mobile-tabs-inner { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .mobile-tabs-inner { flex-wrap: wrap; }
+    .mobile-tab { flex: 0 0 25%; min-width: 0; }
   </style>
 </head>
 <body>
@@ -1265,6 +1266,7 @@
       const expTableMissing = !!expRes.error;
 
       const tierAmts = { gold: 1000, silver: 500, bronze: 250 };
+      const calcFee  = amt => amt * 0.029 + 0.30;
 
       // Donation totals
       const donStripe = donations.filter(d => d.source === 'stripe').reduce((s,d) => s + Number(d.amount), 0);
@@ -1279,6 +1281,12 @@
       const cfStripe = cfPaid.filter(t => t.payment_method === 'stripe').reduce((s,t) => s + Number(t.amount), 0);
       const cfVenmo  = cfPaid.filter(t => t.payment_method === 'venmo') .reduce((s,t) => s + Number(t.amount), 0);
 
+      // Stripe fees (2.9% + $0.30 per transaction)
+      const feesDon  = donations.filter(d => d.source === 'stripe').reduce((s,d) => s + calcFee(Number(d.amount)), 0);
+      const feesSp   = sponsors.reduce((s,sp) => s + calcFee(tierAmts[sp.tier] || 0), 0);
+      const feesCf   = cfPaid.filter(t => t.payment_method === 'stripe').reduce((s,t) => s + calcFee(Number(t.amount)), 0);
+      const stripeFees = feesDon + feesSp + feesCf;
+
       // Venmo pending (not yet bank_transferred)
       const venmoDonPend = donations.filter(d => d.source === 'venmo' && !d.bank_transferred);
       const venmoCfPend  = cfPaid.filter(t => t.payment_method === 'venmo' && !t.bank_transferred);
@@ -1287,7 +1295,7 @@
 
       const totalIncome   = donStripe + donVenmo + donCash + sponsorTotal + cfStripe + cfVenmo;
       const totalExpenses = expenses.reduce((s,e) => s + Number(e.amount), 0);
-      const totalInBank   = totalIncome - pendingAmt;
+      const totalInBank   = totalIncome - pendingAmt - stripeFees;
       const netBalance    = totalInBank - totalExpenses;
 
       // Pie segments
@@ -1300,34 +1308,11 @@
         { label: 'Crawfish — Venmo',   amount: cfVenmo,      color: '#0891b2' },
       ].filter(s => s.amount > 0);
 
-      // All transactions combined
-      const allTxns = [
-        ...donations.map(d => ({
-          date: d.created_at, type: 'donation',
-          who: d.donor_name || 'Anonymous',
-          method: d.source, amount: Number(d.amount),
-          transferred: d.bank_transferred, rowId: d.id, dbTable: 'donations'
-        })),
-        ...sponsors.map(s => ({
-          date: s.created_at, type: 'sponsor',
-          who: s.business_name,
-          method: 'stripe', amount: tierAmts[s.tier] || 0,
-          transferred: true, rowId: s.id, dbTable: null
-        })),
-        ...cfPaid.map(t => ({
-          date: t.created_at, type: 'crawfish',
-          who: t.name || '—',
-          method: t.payment_method, amount: Number(t.amount),
-          transferred: t.bank_transferred, rowId: t.id, dbTable: 'crawfish_tickets'
-        })),
-      ].sort((a,b) => new Date(b.date) - new Date(a.date));
+      const venmoBankBadge = transferred => transferred
+        ? '<span class="badge in-bank">In Bank</span>'
+        : '<span class="badge pend-xfer">Pending</span>';
 
-      const bankBadge = t => t.method === 'venmo'
-        ? (t.transferred
-          ? '<span class="badge in-bank">In Bank</span>'
-          : `<span class="badge pend-xfer">Pending</span>`)
-        : '<span class="badge in-bank">In Bank</span>';
-
+      // Venmo pending section
       const pendingVenmoHtml = (venmoDonPend.length + venmoCfPend.length === 0)
         ? '<div class="empty-state" style="padding:16px 0">No pending Venmo transfers — all clear!</div>'
         : [
@@ -1346,7 +1331,7 @@
               <div class="venmo-pending-item">
                 <div>
                   <div class="venmo-pending-name">${t.name || '—'}</div>
-                  <div class="venmo-pending-meta">Crawfish (${t.quantity}x) · ${formatDate(t.created_at)}</div>
+                  <div class="venmo-pending-meta">Crawfish (${t.quantity}×) · ${formatDate(t.created_at)}</div>
                 </div>
                 <div class="venmo-pending-right">
                   <span class="venmo-pending-amount">${formatCurrency(t.amount)}</span>
@@ -1355,9 +1340,77 @@
               </div>`)
           ].join('');
 
+      // Per-category tables
+      const donationsHtml = donations.length === 0
+        ? '<div class="empty-state">No donations yet.</div>'
+        : `<div class="data-table-wrap"><table class="data-table">
+            <thead><tr><th>Date</th><th>Donor</th><th>Method</th><th>Amount</th><th>Bank Status</th></tr></thead>
+            <tbody>${donations.map(d => `
+              <tr>
+                <td style="white-space:nowrap;color:var(--gray)">${formatDate(d.created_at)}</td>
+                <td><strong>${d.donor_name || 'Anonymous'}</strong></td>
+                <td><span class="badge ${d.source}">${d.source}</span></td>
+                <td><strong>${formatCurrency(d.amount)}</strong></td>
+                <td>${d.source === 'venmo' ? venmoBankBadge(d.bank_transferred) : '<span class="badge in-bank">In Bank</span>'}</td>
+              </tr>`).join('')}
+            </tbody></table></div>
+           <div class="record-cards">${donations.map(d => `
+             <div class="record-card">
+               <div class="record-card-row"><span class="record-card-label">Donor</span><span class="record-card-val"><strong>${d.donor_name || 'Anonymous'}</strong></span></div>
+               <div class="record-card-row"><span class="record-card-label">Method</span><span class="record-card-val"><span class="badge ${d.source}">${d.source}</span></span></div>
+               <div class="record-card-row"><span class="record-card-label">Amount</span><span class="record-card-val"><strong>${formatCurrency(d.amount)}</strong></span></div>
+               <div class="record-card-row"><span class="record-card-label">Bank Status</span><span class="record-card-val">${d.source === 'venmo' ? venmoBankBadge(d.bank_transferred) : '<span class="badge in-bank">In Bank</span>'}</span></div>
+               <div class="record-card-row"><span class="record-card-label">Date</span><span class="record-card-val">${formatDate(d.created_at)}</span></div>
+             </div>`).join('')}</div>`;
+
+      const sponsorsHtml = sponsors.length === 0
+        ? '<div class="empty-state">No paid sponsors yet.</div>'
+        : `<div class="data-table-wrap"><table class="data-table">
+            <thead><tr><th>Date</th><th>Business</th><th>Tier</th><th>Amount</th><th>Bank Status</th></tr></thead>
+            <tbody>${sponsors.map(s => `
+              <tr>
+                <td style="white-space:nowrap;color:var(--gray)">${formatDate(s.created_at)}</td>
+                <td><strong>${s.business_name}</strong></td>
+                <td><span class="badge ${s.tier}">${s.tier}</span></td>
+                <td><strong>${formatCurrency(tierAmts[s.tier] || 0)}</strong></td>
+                <td><span class="badge in-bank">In Bank</span></td>
+              </tr>`).join('')}
+            </tbody></table></div>
+           <div class="record-cards">${sponsors.map(s => `
+             <div class="record-card">
+               <div class="record-card-row"><span class="record-card-label">Business</span><span class="record-card-val"><strong>${s.business_name}</strong></span></div>
+               <div class="record-card-row"><span class="record-card-label">Tier</span><span class="record-card-val"><span class="badge ${s.tier}">${s.tier}</span></span></div>
+               <div class="record-card-row"><span class="record-card-label">Amount</span><span class="record-card-val"><strong>${formatCurrency(tierAmts[s.tier] || 0)}</strong></span></div>
+               <div class="record-card-row"><span class="record-card-label">Date</span><span class="record-card-val">${formatDate(s.created_at)}</span></div>
+             </div>`).join('')}</div>`;
+
+      const crawfishHtml = cfPaid.length === 0
+        ? '<div class="empty-state">No crawfish ticket sales yet.</div>'
+        : `<div class="data-table-wrap"><table class="data-table">
+            <thead><tr><th>Date</th><th>Name</th><th>Qty</th><th>Method</th><th>Amount</th><th>Bank Status</th></tr></thead>
+            <tbody>${cfPaid.map(t => `
+              <tr>
+                <td style="white-space:nowrap;color:var(--gray)">${formatDate(t.created_at)}</td>
+                <td><strong>${t.name || '—'}</strong></td>
+                <td>${t.quantity}</td>
+                <td><span class="badge ${t.payment_method}">${t.payment_method}</span></td>
+                <td><strong>${formatCurrency(t.amount)}</strong></td>
+                <td>${t.payment_method === 'venmo' ? venmoBankBadge(t.bank_transferred) : '<span class="badge in-bank">In Bank</span>'}</td>
+              </tr>`).join('')}
+            </tbody></table></div>
+           <div class="record-cards">${cfPaid.map(t => `
+             <div class="record-card">
+               <div class="record-card-row"><span class="record-card-label">Name</span><span class="record-card-val"><strong>${t.name || '—'}</strong></span></div>
+               <div class="record-card-row"><span class="record-card-label">Tickets</span><span class="record-card-val">${t.quantity}×</span></div>
+               <div class="record-card-row"><span class="record-card-label">Method</span><span class="record-card-val"><span class="badge ${t.payment_method}">${t.payment_method}</span></span></div>
+               <div class="record-card-row"><span class="record-card-label">Amount</span><span class="record-card-val"><strong>${formatCurrency(t.amount)}</strong></span></div>
+               <div class="record-card-row"><span class="record-card-label">Bank Status</span><span class="record-card-val">${t.payment_method === 'venmo' ? venmoBankBadge(t.bank_transferred) : '<span class="badge in-bank">In Bank</span>'}</span></div>
+               <div class="record-card-row"><span class="record-card-label">Date</span><span class="record-card-val">${formatDate(t.created_at)}</span></div>
+             </div>`).join('')}</div>`;
+
       const expenseFormHtml = expTableMissing
-        ? `<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:4px;padding:14px 16px;font-size:0.84rem;color:#92400e;margin-bottom:16px">
-            <strong>Expenses table not found.</strong> Run the SQL in the setup card below to enable expense tracking.
+        ? `<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:4px;padding:14px 16px;font-size:0.84rem;color:#92400e">
+            <strong>Expenses table not set up.</strong> Contact your admin to run the one-time SQL setup.
            </div>`
         : `<div class="expense-add-grid">
              <div class="form-group">
@@ -1387,41 +1440,27 @@
            </div>
            ${expenses.length === 0
              ? '<div class="empty-state">No expenses recorded yet.</div>'
-             : `<div class="data-table-wrap">
-                 <table class="data-table">
-                   <thead><tr>
-                     <th>Date</th><th>Description</th><th>Notes</th><th>Amount</th><th>Receipt</th><th>Actions</th>
-                   </tr></thead>
-                   <tbody>
-                     ${expenses.map(e => `
-                       <tr>
-                         <td style="white-space:nowrap;color:var(--gray)">${formatDate(e.created_at)}</td>
-                         <td><strong>${e.description}</strong></td>
-                         <td style="font-size:0.82rem;color:var(--gray)">${e.notes || '—'}</td>
-                         <td style="color:var(--red)"><strong>−${formatCurrency(e.amount)}</strong></td>
-                         <td>${e.receipt_url ? `<a href="${e.receipt_url}" target="_blank" style="color:var(--gold);font-size:0.8rem">View</a>` : '—'}</td>
-                         <td><button class="action-btn delete" onclick="deleteExpense('${e.id}')">Delete</button></td>
-                       </tr>`).join('')}
-                   </tbody>
-                 </table>
-               </div>
-               <div class="record-cards">
-                 ${expenses.map(e => `
-                   <div class="record-card">
-                     <div class="record-card-row">
-                       <span class="record-card-label">Description</span>
-                       <span class="record-card-val"><strong>${e.description}</strong></span>
-                     </div>
-                     <div class="record-card-row">
-                       <span class="record-card-label">Amount</span>
-                       <span class="record-card-val" style="color:var(--red)"><strong>−${formatCurrency(e.amount)}</strong></span>
-                     </div>
-                     ${e.notes ? `<div class="record-card-row"><span class="record-card-label">Notes</span><span class="record-card-val">${e.notes}</span></div>` : ''}
-                     ${e.receipt_url ? `<div class="record-card-row"><span class="record-card-label">Receipt</span><span class="record-card-val"><a href="${e.receipt_url}" target="_blank" style="color:var(--gold)">View</a></span></div>` : ''}
-                     <div class="record-card-row"><span class="record-card-label">Date</span><span class="record-card-val">${formatDate(e.created_at)}</span></div>
-                     <div class="record-card-actions"><button class="action-btn delete" onclick="deleteExpense('${e.id}')">Delete</button></div>
-                   </div>`).join('')}
-               </div>`
+             : `<div class="data-table-wrap"><table class="data-table">
+                 <thead><tr><th>Date</th><th>Description</th><th>Notes</th><th>Amount</th><th>Receipt</th><th>Actions</th></tr></thead>
+                 <tbody>${expenses.map(e => `
+                   <tr>
+                     <td style="white-space:nowrap;color:var(--gray)">${formatDate(e.created_at)}</td>
+                     <td><strong>${e.description}</strong></td>
+                     <td style="font-size:0.82rem;color:var(--gray)">${e.notes || '—'}</td>
+                     <td style="color:var(--red)"><strong>−${formatCurrency(e.amount)}</strong></td>
+                     <td>${e.receipt_url ? `<a href="${e.receipt_url}" target="_blank" style="color:var(--gold);font-size:0.8rem">View</a>` : '—'}</td>
+                     <td><button class="action-btn delete" onclick="deleteExpense('${e.id}')">Delete</button></td>
+                   </tr>`).join('')}
+                 </tbody></table></div>
+                <div class="record-cards">${expenses.map(e => `
+                  <div class="record-card">
+                    <div class="record-card-row"><span class="record-card-label">Description</span><span class="record-card-val"><strong>${e.description}</strong></span></div>
+                    <div class="record-card-row"><span class="record-card-label">Amount</span><span class="record-card-val" style="color:var(--red)"><strong>−${formatCurrency(e.amount)}</strong></span></div>
+                    ${e.notes ? `<div class="record-card-row"><span class="record-card-label">Notes</span><span class="record-card-val">${e.notes}</span></div>` : ''}
+                    ${e.receipt_url ? `<div class="record-card-row"><span class="record-card-label">Receipt</span><span class="record-card-val"><a href="${e.receipt_url}" target="_blank" style="color:var(--gold)">View</a></span></div>` : ''}
+                    <div class="record-card-row"><span class="record-card-label">Date</span><span class="record-card-val">${formatDate(e.created_at)}</span></div>
+                    <div class="record-card-actions"><button class="action-btn delete" onclick="deleteExpense('${e.id}')">Delete</button></div>
+                  </div>`).join('')}</div>`
            }`;
 
       container.innerHTML = `
@@ -1432,10 +1471,15 @@
             <div class="fin-card-value">${formatCurrency(totalIncome)}</div>
             <div class="fin-card-sub">All sources combined</div>
           </div>
+          <div class="fin-card" style="border-left-color:#635BFF">
+            <div class="fin-card-label">Stripe Fees</div>
+            <div class="fin-card-value" style="color:#635BFF">−${formatCurrency(stripeFees)}</div>
+            <div class="fin-card-sub">Est. 2.9% + $0.30/txn</div>
+          </div>
           <div class="fin-card bank">
             <div class="fin-card-label">Total In Bank</div>
             <div class="fin-card-value">${formatCurrency(totalInBank)}</div>
-            <div class="fin-card-sub">Excl. pending Venmo</div>
+            <div class="fin-card-sub">After fees &amp; pending Venmo</div>
           </div>
           <div class="fin-card venmo-c">
             <div class="fin-card-label">Pending Venmo</div>
@@ -1479,95 +1523,37 @@
           </div>
         </div>
 
-        <!-- ALL TRANSACTIONS -->
+        <!-- DONATIONS -->
         <div class="card">
-          <div class="card-title">All Transactions</div>
-          ${allTxns.length === 0
-            ? '<div class="empty-state">No transactions yet.</div>'
-            : `<div class="data-table-wrap">
-                <table class="data-table">
-                  <thead><tr>
-                    <th>Date</th><th>Type</th><th>Who / Business</th><th>Method</th><th>Amount</th><th>Bank Status</th>
-                  </tr></thead>
-                  <tbody>
-                    ${allTxns.map(t => `
-                      <tr>
-                        <td style="white-space:nowrap;color:var(--gray)">${formatDate(t.date)}</td>
-                        <td><span class="badge ${t.type}">${t.type.charAt(0).toUpperCase()+t.type.slice(1)}</span></td>
-                        <td><strong>${t.who}</strong></td>
-                        <td><span class="badge ${t.method}">${t.method}</span></td>
-                        <td><strong>${formatCurrency(t.amount)}</strong></td>
-                        <td>${bankBadge(t)}</td>
-                      </tr>`).join('')}
-                  </tbody>
-                </table>
-              </div>
-              <div class="record-cards">
-                ${allTxns.map(t => `
-                  <div class="record-card">
-                    <div class="record-card-row">
-                      <span class="record-card-label">Type</span>
-                      <span class="record-card-val"><span class="badge ${t.type}">${t.type.charAt(0).toUpperCase()+t.type.slice(1)}</span></span>
-                    </div>
-                    <div class="record-card-row">
-                      <span class="record-card-label">Who</span>
-                      <span class="record-card-val"><strong>${t.who}</strong></span>
-                    </div>
-                    <div class="record-card-row">
-                      <span class="record-card-label">Method</span>
-                      <span class="record-card-val"><span class="badge ${t.method}">${t.method}</span></span>
-                    </div>
-                    <div class="record-card-row">
-                      <span class="record-card-label">Amount</span>
-                      <span class="record-card-val"><strong>${formatCurrency(t.amount)}</strong></span>
-                    </div>
-                    <div class="record-card-row">
-                      <span class="record-card-label">Bank Status</span>
-                      <span class="record-card-val">${bankBadge(t)}</span>
-                    </div>
-                    <div class="record-card-row">
-                      <span class="record-card-label">Date</span>
-                      <span class="record-card-val" style="color:var(--gray)">${formatDate(t.date)}</span>
-                    </div>
-                  </div>`).join('')}
-              </div>`
-          }
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+            <div class="card-title" style="margin-bottom:0">💰 Donations</div>
+            <div style="font-size:0.82rem;color:var(--gray)">${donations.length} donation${donations.length !== 1 ? 's' : ''} · <strong style="color:var(--navy)">${formatCurrency(donStripe + donVenmo + donCash)}</strong></div>
+          </div>
+          ${donationsHtml}
+        </div>
+
+        <!-- SPONSORS -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+            <div class="card-title" style="margin-bottom:0">🏢 Sponsors</div>
+            <div style="font-size:0.82rem;color:var(--gray)">${sponsors.length} sponsor${sponsors.length !== 1 ? 's' : ''} · <strong style="color:var(--navy)">${formatCurrency(sponsorTotal)}</strong></div>
+          </div>
+          ${sponsorsHtml}
+        </div>
+
+        <!-- CRAWFISH BOIL -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+            <div class="card-title" style="margin-bottom:0">🦞 Crawfish Boil Tickets</div>
+            <div style="font-size:0.82rem;color:var(--gray)">${cfPaid.length} order${cfPaid.length !== 1 ? 's' : ''} · <strong style="color:var(--navy)">${formatCurrency(cfStripe + cfVenmo)}</strong></div>
+          </div>
+          ${crawfishHtml}
         </div>
 
         <!-- EXPENSES -->
         <div class="card">
           <div class="card-title">Expenses</div>
           ${expenseFormHtml}
-        </div>
-
-        <!-- SQL SETUP -->
-        <div class="card" style="border-left:3px solid var(--gold)">
-          <div class="card-title">One-Time SQL Setup</div>
-          <p style="font-size:0.84rem;color:var(--gray);margin-bottom:14px">
-            Run this once in your <strong>Supabase SQL Editor</strong> to enable expense tracking and Venmo transfer marking. Once done, this card can be ignored.
-          </p>
-          <pre class="sql-pre">-- 1. Expenses table
-CREATE TABLE IF NOT EXISTS expenses (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  description text NOT NULL,
-  amount numeric(10,2) NOT NULL,
-  receipt_url text,
-  notes text,
-  created_at timestamptz DEFAULT now()
-);
-ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "admin full access expenses" ON expenses
-  FOR ALL TO authenticated
-  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'))
-  WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
-
--- 2. Venmo transfer tracking columns
-ALTER TABLE donations ADD COLUMN IF NOT EXISTS bank_transferred boolean DEFAULT false;
-ALTER TABLE crawfish_tickets ADD COLUMN IF NOT EXISTS bank_transferred boolean DEFAULT false;
-
--- 3. Receipts storage (Supabase Dashboard → Storage → New bucket)
---    Name: receipts   Type: Public
---    Then add INSERT policy for authenticated users on that bucket.</pre>
         </div>
       `;
 
