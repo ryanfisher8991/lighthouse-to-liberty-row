@@ -255,6 +255,7 @@
 
     @media (max-width: 768px) {
       .sidebar { display: none; }
+      .mobile-tabs { display: block; }
       .admin-main { padding: 16px; padding-bottom: calc(116px + env(safe-area-inset-bottom)); }
       .add-donation-grid { grid-template-columns: 1fr; }
       .sponsor-form-grid { grid-template-columns: 1fr; }
@@ -752,7 +753,7 @@
   function showAdmin(user) {
     document.getElementById('loginPage').style.display = 'none';
     document.getElementById('adminPage').classList.add('show');
-    document.getElementById('mobileTabs').style.removeProperty('display');
+    document.getElementById('mobileTabs').style.display = '';
     document.getElementById('sidebarUser').textContent = user.email;
     loadDashboard();
     loadSettings();
