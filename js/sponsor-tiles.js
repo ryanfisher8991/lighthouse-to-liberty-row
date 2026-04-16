@@ -16,7 +16,7 @@ function renderSponsorTiles(sponsors, { excludeEquipment = false } = {}) {
       <div class="sponsor-tile-name-wrap">
         <div class="sponsor-tile-name">${s.business_name}</div>
         ${s.tier === 'equipment'
-          ? `<span class="sponsor-tile-equipment-label">Equipment Partner</span>`
+          ? `<span class="sponsor-tile-equipment-label">Equipment Sponsor</span>${s.website_url ? `<span class="sponsor-tile-url">${s.website_url.replace(/^https?:\/\/(www\.)?/, '')}</span>` : ''}`
           : (s.website_url ? `<span class="sponsor-tile-url">${s.website_url.replace(/^https?:\/\/(www\.)?/, '')}</span>` : '')}
       </div>
     </a>`;
@@ -25,8 +25,8 @@ function renderSponsorTiles(sponsors, { excludeEquipment = false } = {}) {
 
   if (!excludeEquipment && goldGroup.length) {
     const label = byTier.gold.length && byTier.equipment.length
-      ? 'Gold Sponsors &amp; Equipment Partners'
-      : byTier.gold.length ? 'Gold Sponsors' : 'Equipment Partners';
+      ? 'Gold Sponsors &amp; Equipment Sponsors'
+      : byTier.gold.length ? 'Gold Sponsors' : 'Equipment Sponsors';
     sections.push(`
       <div class="sponsor-tier-group">
         <div class="sponsor-tier-label gold">${label}</div>
