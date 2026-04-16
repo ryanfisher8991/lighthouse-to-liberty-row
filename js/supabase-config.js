@@ -45,7 +45,7 @@ async function getApprovedSponsors() {
     .from('sponsors')
     .select('id, business_name, website_url, logo_url, tier')
     .eq('approved', true)
-    .eq('payment_status', 'paid')
+    .or('payment_status.eq.paid,tier.eq.equipment')
     .order('tier', { ascending: false })
     .limit(SPONSOR_LIST_LIMIT);
   if (error) { console.error('getApprovedSponsors:', error); return []; }
