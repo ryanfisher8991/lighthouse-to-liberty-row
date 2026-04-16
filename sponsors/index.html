@@ -310,6 +310,19 @@
     .sponsor-tile.gold   .sponsor-tile-name { font-size: 0.875rem; }
     .sponsor-tile.silver .sponsor-tile-name { font-size: 0.8rem; }
     .sponsor-tile.bronze .sponsor-tile-name { font-size: 0.76rem; }
+    .sponsor-tile.equipment {
+      padding: 24px 24px 18px; min-width: 180px; max-width: 220px; flex: 1;
+      border: 2px solid rgba(220,38,38,0.65);
+      box-shadow: 0 4px 20px rgba(220,38,38,0.1);
+    }
+    .sponsor-tile.equipment:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(220,38,38,0.18); }
+    .sponsor-tile.equipment .sponsor-tile-logo-wrap { height: 72px; }
+    .sponsor-tile.equipment .sponsor-tile-logo-wrap img { max-height: 72px; }
+    .sponsor-tile.equipment .sponsor-tile-name { font-size: 0.875rem; }
+    .sponsor-tile-equipment-label {
+      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #dc2626; opacity: 0.85; display: block; margin-top: 2px;
+    }
     .sponsor-tile-url { font-size: 0.68rem; color: var(--gold); opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block; }
     .sponsor-tile:hover .sponsor-tile-url { opacity: 1; }
 
@@ -923,7 +936,7 @@
       display.innerHTML = '<p class="sponsors-empty">No sponsors yet — be the first!</p>';
       return;
     }
-    display.innerHTML = renderSponsorTiles(sponsors);
+    display.innerHTML = renderSponsorTiles(sponsors, { excludeEquipment: true });
   }
 
   loadSponsors();
